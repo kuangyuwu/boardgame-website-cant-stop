@@ -1,0 +1,122 @@
+#title-outer {
+    height: 75px;
+    background-color: orange;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#title {
+    font-size: xx-large;
+}
+
+#section-1 {
+    height: 125px;
+    background-color: darkgoldenrod;
+    display: flex;
+    align-items: center; 
+    justify-content: space-around;
+}
+
+#dices-outer {
+    width: 40%;
+    height: 125px;
+    background-color: chartreuse;
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+}
+
+.grouping-outer {
+    width: 20%;
+    height: 125px;
+    background-color: greenyellow;
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+}
+
+#section-2 {
+    height: 500px;
+    background-color: yellow;
+    display: flex;
+    align-items: center; 
+    justify-content: space-around;
+}
+
+#board {
+    width: 75%;
+    height: 500px;
+    background-color: aquamarine;
+    display: flex;
+    align-items: center; 
+    justify-content: space-around;
+}
+
+.path-outer {
+    width: 40px;
+    height: 500px;
+    background-color: chocolate;
+}
+
+.path-inner {
+    width: 40px;
+    height: 460px;
+    background-color: antiquewhite;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.space {
+    width: 30px;
+    height: 30px;
+    margin: 2px;
+    border: 2px solid black;
+    border-radius: 100%;
+    background-color: pink;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.marker {
+    width: 18px;
+    height: 18px;
+    border-radius: 100%;
+    background-color: blue;
+    position: absolute;
+}
+
+.temp {
+    opacity: 30%;
+}
+
+.path-name-outer {
+    width: 40px;
+    height: 40px;
+    background-color: orangered;
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+}
+
+#scoreboard {
+    width: 25%;
+    height: 500px;
+    background-color: lightblue;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.player-outer {
+    width: 100%;
+    height: 120px;
+    background-color: lightskyblue;
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+}
