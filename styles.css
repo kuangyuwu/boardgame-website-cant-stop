@@ -125,11 +125,11 @@
     opacity: 30%;
 }
 
-#section-2 {
+#activity-feed {
     background-color: darkgoldenrod;
 }
 
-.bar-outer {
+.activity-outer {
     height: 35px;
     background-color: greenyellow;
     display: flex;
@@ -137,7 +137,7 @@
     justify-content: center;
 }
 
-.bar-inner {
+.activity-inner {
     font-size: large;
     display: flex;
     align-items: center; 
