@@ -1,12 +1,12 @@
 import { rollDices } from "./server.js";
 
-function clearActivityFeed() {
-  const activityFeed = document.getElementById("activity-feed");
-  activityFeed.innerHTML = "";
+function clearFeed() {
+  const feed = document.getElementById("feed");
+  feed.innerHTML = "";
 }
 
-function logActivity(innerHTMLNodes) {
-  const activityFeed = document.getElementById("activity-feed");
+function logToFeed(innerHTMLNodes) {
+  const feed = document.getElementById("feed");
 
   const activityOuter = document.createElement("div");
   activityOuter.setAttribute("class", "activity-outer");
@@ -17,7 +17,27 @@ function logActivity(innerHTMLNodes) {
     activityInner.appendChild(node);
   }
 
-  activityFeed.append(activityOuter);
+  feed.append(activityOuter);
+}
+
+function activityStart(client) {
+  const startPrompt = document.createElement("span");
+  startPrompt.innerHTML = "Start a new game:&nbsp;";
+  let nodes = [startPrompt];
+  for (let i = 0; i < 1; i++) {
+    let startButton = document.createElement("button");
+    startButton.innerHTML = "Start";
+    startButton.onclick = () => {
+      client.send({
+        type: "start",
+        body: {
+          config: i,
+        },
+      });
+    };
+    nodes.push(startButton);
+  }
+  return nodes;
 }
 
 function activityRoll() {
@@ -27,7 +47,7 @@ function activityRoll() {
   rollButton.innerHTML = "Roll";
   rollButton.onclick = () => {
     // clearActivityFeed();
-    logActivity(activityDices(rollDices()));
+    logToFeed(activityDices(rollDices()));
   };
   return [rollPrompt, rollButton];
 }
@@ -48,4 +68,4 @@ function dice(point) {
   return dice;
 }
 
-export { clearActivityFeed, logActivity, activityRoll, activityDices };
+export { clearFeed, logToFeed, activityStart, activityRoll, activityDices };
