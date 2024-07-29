@@ -1,3 +1,5 @@
+import { rollDices } from "./game_play.js";
+
 function clearActivityFeed() {
   const activityFeed = document.getElementById("activity-feed");
   activityFeed.innerHTML = "";
@@ -24,8 +26,8 @@ function activityRoll() {
   const rollButton = document.createElement("button");
   rollButton.innerHTML = "Roll";
   rollButton.onclick = () => {
-    clearActivityFeed();
-    postActivity(activityDices([2, 3, 4, 5]));
+    // clearActivityFeed();
+    postActivity(activityDices(rollDices()));
   };
   return [rollPrompt, rollButton];
 }
