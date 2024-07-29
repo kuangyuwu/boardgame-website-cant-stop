@@ -1,11 +1,11 @@
-import { rollDices } from "./game_play.js";
+import { rollDices } from "./server.js";
 
 function clearActivityFeed() {
   const activityFeed = document.getElementById("activity-feed");
   activityFeed.innerHTML = "";
 }
 
-function postActivity(innerHTMLNodes) {
+function logActivity(innerHTMLNodes) {
   const activityFeed = document.getElementById("activity-feed");
 
   const activityOuter = document.createElement("div");
@@ -27,7 +27,7 @@ function activityRoll() {
   rollButton.innerHTML = "Roll";
   rollButton.onclick = () => {
     // clearActivityFeed();
-    postActivity(activityDices(rollDices()));
+    logActivity(activityDices(rollDices()));
   };
   return [rollPrompt, rollButton];
 }
@@ -48,4 +48,4 @@ function dice(point) {
   return dice;
 }
 
-export { clearActivityFeed, postActivity, activityRoll, activityDices };
+export { clearActivityFeed, logActivity, activityRoll, activityDices };
