@@ -8,7 +8,7 @@ function updateMove(move) {
   moveCounter.innerHTML = `Move: ${move}`;
 }
 
-function addPlayers(ids) {
+function createPlayers(ids) {
   const scoreboard = document.getElementById("scoreboard");
   for (const id of ids) {
     const playerOuter = document.createElement("div");
@@ -31,4 +31,13 @@ function updatePlayer(id, isPlaying, score) {
   }
 }
 
-export { updateTurn, updateMove, addPlayers, updatePlayer };
+function resetSidePanel() {
+  const turnCounter = document.getElementById("turn");
+  turnCounter.innerHTML = "";
+  const moveCounter = document.getElementById("move");
+  moveCounter.innerHTML = "";
+  const scoreboard = document.getElementById("scoreboard");
+  scoreboard.innerHTML = "";
+}
+
+export { updateTurn, updateMove, createPlayers, updatePlayer, resetSidePanel };

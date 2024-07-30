@@ -1,4 +1,4 @@
-import { initGameboard } from "./gameboard.js";
+import { initializeGameboard } from "./gameboard.js";
 import { clearFeed } from "./feed.js";
 import {} from "./side_panel.js";
 
@@ -33,7 +33,7 @@ class Client {
   }
 
   handlerStart(body) {
-    initGameboard(body.pathLengths);
+    initializeGameboard(body.pathLengths);
     clearFeed();
   }
 }
