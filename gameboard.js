@@ -8,6 +8,7 @@ function initializeGameboard(pathLengths) {
     pathOuter.setAttribute("class", "path-outer");
     const pathInner = document.createElement("div");
     pathInner.setAttribute("class", "path-inner");
+    pathInner.setAttribute("id", `path-${i}`);
     const pathNameOuter = document.createElement("div");
     pathNameOuter.setAttribute("class", "path-name-outer");
     const pathName = document.createElement("div");
@@ -60,4 +61,15 @@ function updateSpace(i, j, colors, hasTemp) {
   }
 }
 
-export { initializeGameboard, updateSpace };
+function blockPath(i, color) {
+  const path = document.getElementById(`path-${i}`);
+  let spaces = path.childNodes;
+  spaces.forEach((space) => {
+    space.innerHTML = "";
+    let marker = document.createElement("div");
+    marker.setAttribute("class", `marker-${color} singlet-0`);
+    space.appendChild(marker);
+  });
+}
+
+export { initializeGameboard, updateSpace, blockPath };

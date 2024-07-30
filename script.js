@@ -7,7 +7,7 @@ import {
 import { Client } from "./client.js";
 import { Server } from "./server.js";
 
-import { initializeGameboard, updateSpace } from "./gameboard.js";
+import { initializeGameboard, updateSpace, blockPath } from "./gameboard.js";
 import { createPlayers, updatePlayer, resetSidePanel } from "./side_panel.js";
 
 function main() {
@@ -21,6 +21,7 @@ function main() {
   updateSpace(5, 5, [1, 2, 3, 4], true);
   updateSpace(6, 6, [1, 2, 3, 4, 5], false);
   updateSpace(7, 7, [5], false);
+  blockPath(7, 3);
 
   // server.send({ test1: "test1" }, "a");
   // client.send({ test2: "test" });
