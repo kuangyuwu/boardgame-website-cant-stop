@@ -14,6 +14,7 @@ function initializeGameboard(pathLengths) {
     const pathName = document.createElement("div");
     pathName.setAttribute("class", "path-name");
     pathName.innerHTML = `${i}`;
+
     gameboard.appendChild(pathOuter);
     pathOuter.appendChild(pathInner);
     pathOuter.appendChild(pathNameOuter);

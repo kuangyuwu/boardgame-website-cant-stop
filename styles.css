@@ -238,11 +238,15 @@
 
 
 #feed {
-    background-color: darkgoldenrod;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
 }
 
 .activity-outer {
-    height: 35px;
+    margin: 5px;
+    height: 30px;
     background-color: greenyellow;
     display: flex;
     align-items: center; 

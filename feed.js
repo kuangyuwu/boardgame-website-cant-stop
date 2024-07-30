@@ -5,25 +5,25 @@ function clearFeed() {
   feed.innerHTML = "";
 }
 
-function logToFeed(innerHTMLNodes) {
+function postToFeed(innerHTMLNodes) {
   const feed = document.getElementById("feed");
-
   const activityOuter = document.createElement("div");
   activityOuter.setAttribute("class", "activity-outer");
   const activityInner = document.createElement("div");
   activityInner.setAttribute("class", "activity-inner");
+
+  feed.appendChild(activityOuter);
   activityOuter.appendChild(activityInner);
   for (const node of innerHTMLNodes) {
     activityInner.appendChild(node);
   }
-
-  feed.appendChild(activityOuter);
 }
 
-function activityStart(client) {
+function postStart(client) {
+  let nodes = [];
   const startPrompt = document.createElement("span");
   startPrompt.innerHTML = "Start a new game:&nbsp;";
-  let nodes = [startPrompt];
+  nodes.push(startPrompt);
   for (let i = 0; i < 1; i++) {
     let startButton = document.createElement("button");
     startButton.innerHTML = "Start";
@@ -37,29 +37,89 @@ function activityStart(client) {
     };
     nodes.push(startButton);
   }
-  return nodes;
+  postToFeed(nodes);
 }
 
-function activityRoll() {
+function postRoll() {
+  let nodes = [];
   const rollPrompt = document.createElement("span");
   rollPrompt.innerHTML = "Roll the dices:&nbsp;";
+  nodes.push(rollPrompt);
   const rollButton = document.createElement("button");
   rollButton.innerHTML = "Roll";
-  rollButton.onclick = () => {
-    // clearActivityFeed();
-    logToFeed(activityDices(rollDices()));
-  };
-  return [rollPrompt, rollButton];
+  rollButton.onclick = () => {};
+  nodes.push(rollButton);
+  postToFeed(nodes);
 }
 
-function activityDices(points) {
+function postDices(points) {
+  let nodes = [];
   const text = document.createElement("span");
   text.innerHTML = "Dices:&nbsp;";
-  const dices = [text];
+  nodes.push(text);
   for (const point of points) {
-    dices.push(dice(point));
+    nodes.push(dice(point));
   }
-  return dices;
+  postToFeed(nodes);
+}
+
+function postOptions(groups, options) {
+  let nodes = [];
+  for (const [i, group] of groups.entries()) {
+    for (const point of group) {
+      nodes.push(dice(point));
+    }
+    if (i != groups.length - 1) {
+      let text = document.createElement("span");
+      text.innerHTML = "&nbsp;,&nbsp;";
+      nodes.push(text);
+    } else {
+      let text = document.createElement("span");
+      text.innerHTML = "&nbsp;:&nbsp;";
+      nodes.push(text);
+    }
+  }
+  for (const option of options) {
+    const optionButton = document.createElement("button");
+    optionButton.innerHTML = "Advance " + option.join();
+    optionButton.onclick = () => {};
+    nodes.push(optionButton);
+    const blank = document.createElement("span");
+    blank.innerHTML = "&nbsp;";
+    nodes.push(blank);
+  }
+  postToFeed(nodes);
+}
+
+function postContinue() {
+  let nodes = [];
+  const continuePrompt = document.createElement("span");
+  continuePrompt.innerHTML = "Roll the dices:&nbsp;";
+  nodes.push(continuePrompt);
+  const continueButton = document.createElement("button");
+  continueButton.innerHTML = "Continue";
+  continueButton.onclick = () => {};
+  nodes.push(continueButton);
+  const blank = document.createElement("span");
+  blank.innerHTML = "&nbsp;";
+  nodes.push(blank);
+  const stopButton = document.createElement("button");
+  stopButton.innerHTML = "Stop";
+  stopButton.onclick = () => {};
+  nodes.push(stopButton);
+  postToFeed(nodes);
+}
+
+function postTurnEnds() {
+  let nodes = [];
+  const text = document.createElement("span");
+  text.innerHTML = "No valid actions: turn ends&nbsp;";
+  nodes.push(text);
+  const okButton = document.createElement("button");
+  okButton.innerHTML = "Ok";
+  okButton.onclick = () => {};
+  nodes.push(okButton);
+  postToFeed(nodes);
 }
 
 function dice(point) {
@@ -68,4 +128,12 @@ function dice(point) {
   return dice;
 }
 
-export { clearFeed, logToFeed, activityStart, activityRoll, activityDices };
+export {
+  clearFeed,
+  postStart,
+  postRoll,
+  postDices,
+  postOptions,
+  postContinue,
+  postTurnEnds,
+};

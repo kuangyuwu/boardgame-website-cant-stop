@@ -1,14 +1,17 @@
-import {
-  logToFeed,
-  activityStart,
-  activityRoll,
-  activityDices,
-} from "./feed.js";
 import { Client } from "./client.js";
 import { Server } from "./server.js";
 
 import { initializeGameboard, updateSpace, blockPath } from "./gameboard.js";
 import { createPlayers, updatePlayer, resetSidePanel } from "./side_panel.js";
+import {
+  postStart,
+  postRoll,
+  postDices,
+  postOptions,
+  postTurnEnds,
+  postContinue,
+  clearFeed,
+} from "./feed.js";
 
 function main() {
   console.log("abc");
@@ -23,17 +26,12 @@ function main() {
   updateSpace(7, 7, [5], false);
   blockPath(7, 3);
 
-  // server.send({ test1: "test1" }, "a");
-  // client.send({ test2: "test" });
-
-  // logToFeed(activityStart(client));
-
-  // createPlayers(["a", "2", "iii"]);
-  // updatePlayer("2", true, 20);
-  // resetSidePanel();
-
-  // logToFeed(activityRoll());
-  // logToFeed(activityDices([1, 3, 5, 5]));
+  postStart(client);
+  postRoll();
+  postDices([1, 2, 3, 4, 5, 6]);
+  postOptions([[1, 2], [3, 4], [5]], [[2, 6], [4], [2, 3, 10]]);
+  postTurnEnds();
+  postContinue();
 }
 
 main();
