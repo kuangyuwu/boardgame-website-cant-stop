@@ -1,4 +1,3 @@
-import { initGameboard } from "./gameboard.js";
 import {
   logToFeed,
   activityStart,
@@ -7,6 +6,8 @@ import {
 } from "./feed.js";
 import { Client } from "./client.js";
 import { Server } from "./server.js";
+
+import { addPlayers, updatePlayer } from "./side_panel.js";
 
 function main() {
   console.log("abc");
@@ -17,8 +18,8 @@ function main() {
 
   logToFeed(activityStart(client));
 
-  // const pathLengths = [-1, -1, 3, 5, 7, 9, 11, 13, 11, 9, 7, 5, 3];
-  // const gameboard = initGameboard(pathLengths);
+  addPlayers(["a", "2", "iii"]);
+  updatePlayer("2", true, 20);
 
   // logToFeed(activityRoll());
   // logToFeed(activityDices([1, 3, 5, 5]));

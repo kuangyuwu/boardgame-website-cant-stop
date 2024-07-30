@@ -46,8 +46,8 @@
     justify-content: space-around;
 }
 
-#counter {
-    width: 35%;
+.counter {
+    width: 38%;
     font-size: larger;
 }
 

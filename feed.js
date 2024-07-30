@@ -17,7 +17,7 @@ function logToFeed(innerHTMLNodes) {
     activityInner.appendChild(node);
   }
 
-  feed.append(activityOuter);
+  feed.appendChild(activityOuter);
 }
 
 function activityStart(client) {

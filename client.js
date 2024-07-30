@@ -1,5 +1,6 @@
 import { initGameboard } from "./gameboard.js";
 import { clearFeed } from "./feed.js";
+import {} from "./side_panel.js";
 
 class Client {
   constructor(id, server) {
