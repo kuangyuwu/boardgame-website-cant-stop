@@ -1,11 +1,11 @@
-function updateTurn(turn) {
+function updateTurnCount(turnCount) {
   const turnCounter = document.getElementById("turn");
-  turnCounter.innerHTML = `Turn: ${turn}`;
+  turnCounter.innerHTML = `Turn: ${turnCount}`;
 }
 
-function updateMove(move) {
+function updateMoveCount(moveCount) {
   const moveCounter = document.getElementById("move");
-  moveCounter.innerHTML = `Move: ${move}`;
+  moveCounter.innerHTML = `Move: ${moveCount}`;
 }
 
 function createPlayers(ids) {
@@ -40,4 +40,10 @@ function resetSidePanel() {
   scoreboard.innerHTML = "";
 }
 
-export { updateTurn, updateMove, createPlayers, updatePlayer, resetSidePanel };
+export {
+  updateTurnCount,
+  updateMoveCount,
+  createPlayers,
+  updatePlayer,
+  resetSidePanel,
+};

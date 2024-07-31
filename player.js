@@ -51,7 +51,7 @@ class Player {
         count++;
       }
     }
-    return count >= goal;
+    return count;
   }
 
   isWinner(goal) {

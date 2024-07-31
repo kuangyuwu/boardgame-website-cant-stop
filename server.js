@@ -6,7 +6,7 @@ class Server {
     this.ruleSet = null;
 
     this.turnCount = 0;
-    this.playing = -1;
+    this.playing = 0;
     this.moveCount = 0;
   }
 
@@ -20,53 +20,59 @@ class Server {
   }
 
   sendToAll(data) {
-    for (const player in this.players) {
+    for (const player of this.players) {
       this.send(player, data);
     }
   }
 
   sendStart() {
-    this.sendToAll({
+    const data = {
       type: "start",
       body: {
         pathLengths: this.ruleSet.pathLengths,
         ids: this.players.map((player) => player.id),
       },
-    });
+    };
+    this.sendToAll(data);
   }
 
   sendTurnCount() {
-    this.sendToAll({
+    const data = {
       type: "turnCount",
       body: {
         turnCount: this.turnCount,
       },
-    });
+    };
+    this.sendToAll(data);
   }
 
   sendPlayer(isPlaying) {
     const player = this.players[this.playing];
-    this.sendToAll({
+    const data = {
       type: "player",
       body: {
         id: player.id,
         isPlaying: isPlaying,
         score: player.score(),
       },
-    });
+    };
+    this.sendToAll(data);
   }
 
   sendMoveCount() {
-    this.sendToAll({
+    const data = {
       type: "moveCount",
       body: {
         moveCount: this.moveCount,
       },
-    });
+    };
+    this.sendToAll(data);
   }
 
   sendRoll() {
-    this.send(this.players[this.playing], { type: "roll", body: {} });
+    const player = this.players[this.playing];
+    const data = { type: "roll", body: {} };
+    this.send(player, data);
   }
 
   sendDices() {
@@ -77,7 +83,7 @@ class Server {
       [dices[0] + dices[2], dices[1] + dices[3]],
       [dices[0] + dices[3], dices[1] + dices[2]],
     ];
-    let actions = [];
+    let options = [];
     let hasOptions = false;
     for (const grouping of groupings) {
       let temp = [];
@@ -86,6 +92,7 @@ class Server {
       if (this.isValidAction([g1, g2], player)) {
         temp.push([g1, g2]);
         hasOptions = true;
+        options.push([...temp]);
         continue;
       }
       if (this.isValidAction([g1], player)) {
@@ -96,31 +103,33 @@ class Server {
         temp.push([g2]);
         hasOptions = true;
       }
-      actions.push(temp);
+      options.push([...temp]);
     }
-    this.send(player, {
+    const data = {
       type: "dices",
       body: {
         dices: dices,
-        actions: options,
+        options: options,
         hasOptions: hasOptions,
       },
-    });
+    };
+    this.send(player, data);
   }
 
   sendWinner() {
     const player = this.players[this.playing];
-    this.sendToAll({
+    const data = {
       type: "winner",
       body: {
         winner: player.id,
       },
-    });
+    };
+    this.sendToAll(data);
   }
 
   sendGameboard() {
     let gameboard = [];
-    for ([path, length] of this.ruleSet.pathLengths.entries()) {
+    for (const [path, length] of this.ruleSet.pathLengths.entries()) {
       if (length == -1) {
         gameboard.push(null);
       } else {
@@ -134,44 +143,49 @@ class Server {
       }
     }
     for (const [n, player] of this.players.entries()) {
-      for ([path, length] of this.ruleSet.pathLengths.entries()) {
+      for (const [path, length] of this.ruleSet.pathLengths.entries()) {
+        if (length == -1) {
+          continue;
+        }
         const j = length - player.state[path] - 1;
         if (j != -1) {
           gameboard[path][j].colors.push(n);
         }
       }
     }
+    console.log(gameboard);
     const n = this.playing;
     const player = this.players[n];
     for (const [path, x] of player.temp.entries()) {
       if (x == 0) {
         continue;
       }
-      const j = length - player.state[path] - 1;
+      const j = this.ruleSet.pathLengths[path] - player.state[path] - 1;
       for (let k = 1; k <= x; k++) {
         gameboard[path][j + k].colors.push(n);
         gameboard[path][j + k].hasTemp = true;
       }
     }
     let block = [];
-    for ([path, length] of this.ruleSet.pathLengths.entries()) {
+    for (const [path, length] of this.ruleSet.pathLengths.entries()) {
       if (length != -1 && this.isComplete(path)) {
         block.push(path);
       }
     }
-    this.sendToAll({
+    const data = {
       type: "gameboard",
       body: {
         gameboard: gameboard,
         block: block,
       },
-    });
+    };
+    this.sendToAll(data);
   }
 
   handle(data) {
     console.log(`The server receives the following data:`);
     console.log(data);
-    if (data[id] != this.players[this.playing].id) {
+    if (data.id != this.players[this.playing].id) {
       console.log(`Not Player ${data[id]}'s turn`);
       return;
     }
@@ -194,7 +208,7 @@ class Server {
     this.ruleSet = ruleSets[body.ruleSet];
     this.turnCount = 0;
     shuffle(this.players);
-    for (let player of players) {
+    for (let player of this.players) {
       player.initialize(this.ruleSet.pathLengths);
     }
     this.sendStart();
@@ -248,7 +262,7 @@ class Server {
 
   loseTurn() {
     const player = this.players[this.playing];
-    player.addMoves(moveCount);
+    player.addMoves(this.moveCount);
     player.resetTemp();
     this.sendGameboard();
     this.sendPlayer(false);
@@ -260,7 +274,7 @@ class Server {
     for (const path of action) {
       player.takeAction(path);
     }
-    player.addMoves(moveCount);
+    player.addMoves(this.moveCount);
     player.updateState();
     player.resetTemp();
     this.sendGameboard();
@@ -282,7 +296,7 @@ class Server {
   }
 
   isComplete(path) {
-    for (const player of self.players) {
+    for (const player of this.players) {
       if (player.state[path] == 0) {
         return true;
       }
@@ -297,13 +311,13 @@ class Server {
     if (player.temp[path] > 0) {
       return player.state[path] > player.temp[path];
     }
-    return player.numTemp() < self.ruleSet.numTemp;
+    return player.numTemp() < this.ruleSet.numTemp;
   }
 
   isValidAction(action, player) {
     for (const [i, path] of action.entries()) {
       if (!this.isValidPath(path, player)) {
-        for (let j = i - 1; i >= 0; i--) {
+        for (let j = i - 1; j >= 0; j--) {
           player.undoAction(action[j]);
         }
         return false;
@@ -313,7 +327,7 @@ class Server {
     for (const path of action) {
       player.undoAction(path);
     }
-    return True;
+    return true;
   }
 }
 

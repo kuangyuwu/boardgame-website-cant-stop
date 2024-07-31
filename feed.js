@@ -1,5 +1,3 @@
-import { rollDices } from "./server.js";
-
 function clearFeed() {
   const feed = document.getElementById("feed");
   feed.innerHTML = "";
@@ -19,7 +17,7 @@ function postToFeed(innerHTMLNodes) {
   }
 }
 
-function postStart(client) {
+function postStart(sendStart) {
   let nodes = [];
   const startPrompt = document.createElement("span");
   startPrompt.innerHTML = "Start a new game:&nbsp;";
@@ -28,26 +26,23 @@ function postStart(client) {
     let startButton = document.createElement("button");
     startButton.innerHTML = "Start";
     startButton.onclick = () => {
-      client.send({
-        type: "start",
-        body: {
-          config: i,
-        },
-      });
+      sendStart(i);
     };
     nodes.push(startButton);
   }
   postToFeed(nodes);
 }
 
-function postRoll() {
+function postRoll(sendRoll) {
   let nodes = [];
   const rollPrompt = document.createElement("span");
   rollPrompt.innerHTML = "Roll the dices:&nbsp;";
   nodes.push(rollPrompt);
   const rollButton = document.createElement("button");
   rollButton.innerHTML = "Roll";
-  rollButton.onclick = () => {};
+  rollButton.onclick = () => {
+    sendRoll();
+  };
   nodes.push(rollButton);
   postToFeed(nodes);
 }
@@ -63,7 +58,7 @@ function postDices(points) {
   postToFeed(nodes);
 }
 
-function postOptions(groups, options) {
+function postOptions(groups, options, sendAction) {
   let nodes = [];
   for (const [i, group] of groups.entries()) {
     for (const point of group) {
@@ -82,7 +77,9 @@ function postOptions(groups, options) {
   for (const option of options) {
     const optionButton = document.createElement("button");
     optionButton.innerHTML = "Advance " + option.join();
-    optionButton.onclick = () => {};
+    optionButton.onclick = () => {
+      postContinue(sendAction, option);
+    };
     nodes.push(optionButton);
     const blank = document.createElement("span");
     blank.innerHTML = "&nbsp;";
@@ -91,34 +88,48 @@ function postOptions(groups, options) {
   postToFeed(nodes);
 }
 
-function postContinue() {
+function postContinue(sendAction, action) {
   let nodes = [];
   const continuePrompt = document.createElement("span");
   continuePrompt.innerHTML = "Roll the dices:&nbsp;";
   nodes.push(continuePrompt);
   const continueButton = document.createElement("button");
   continueButton.innerHTML = "Continue";
-  continueButton.onclick = () => {};
+  continueButton.onclick = () => {
+    sendAction("continue", action);
+  };
   nodes.push(continueButton);
   const blank = document.createElement("span");
   blank.innerHTML = "&nbsp;";
   nodes.push(blank);
   const stopButton = document.createElement("button");
   stopButton.innerHTML = "Stop";
-  stopButton.onclick = () => {};
+  stopButton.onclick = () => {
+    sendAction("stop", action);
+  };
   nodes.push(stopButton);
   postToFeed(nodes);
 }
 
-function postTurnEnds() {
+function postTurnEnds(sendAction) {
   let nodes = [];
   const text = document.createElement("span");
   text.innerHTML = "No valid actions: turn ends&nbsp;";
   nodes.push(text);
   const okButton = document.createElement("button");
   okButton.innerHTML = "Ok";
-  okButton.onclick = () => {};
+  okButton.onclick = () => {
+    sendAction("lose", null);
+  };
   nodes.push(okButton);
+  postToFeed(nodes);
+}
+
+function postWinner(id) {
+  let nodes = [];
+  const text = document.createElement("span");
+  text.innerHTML = `Winner is ${id}`;
+  nodes.push(text);
   postToFeed(nodes);
 }
 
@@ -136,4 +147,5 @@ export {
   postOptions,
   postContinue,
   postTurnEnds,
+  postWinner,
 };
