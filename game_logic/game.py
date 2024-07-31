@@ -8,12 +8,11 @@ from util import (
 
 def start_game():
     while yes_no("New game?"):
-        Round(2).start()
+        Game(2).start()
     print("********** Thank you for playing! **********")
 
 
-class Round:
-
+class Game:
 
     def __init__(self, num_players: int):
         self.path_lengths: list[int] = [

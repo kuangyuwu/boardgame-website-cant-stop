@@ -113,35 +113,35 @@
     justify-content: center;
 }
 
-.marker-1 {
+.marker-0 {
     width: 15px;
     height: 15px;
     border-radius: 100%;
     background-color: blue;
 }
 
-.marker-2 {
+.marker-1 {
     width: 15px;
     height: 15px;
     border-radius: 100%;
     background-color: red;
 }
 
-.marker-3 {
+.marker-2 {
     width: 15px;
     height: 15px;
     border-radius: 100%;
     background-color: green;
 }
 
-.marker-4 {
+.marker-3 {
     width: 15px;
     height: 15px;
     border-radius: 100%;
     background-color: yellow;
 }
 
-.marker-5 {
+.marker-4 {
     width: 15px;
     height: 15px;
     border-radius: 100%;
@@ -238,6 +238,7 @@
 
 
 #feed {
+    padding: 5px;
     background-color: white;
     display: flex;
     flex-direction: column;

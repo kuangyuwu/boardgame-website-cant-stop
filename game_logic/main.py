@@ -1,4 +1,4 @@
-from board import start_game
+from game_logic.game import start_game
 
 
 def main() -> None:

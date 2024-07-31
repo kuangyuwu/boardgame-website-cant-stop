@@ -19,12 +19,13 @@ function main() {
   const client = new Client("a", server);
 
   initializeGameboard([-1, -1, 3, 5, 7, 9, 11, 13, 11, 9, 7, 5, 3]);
-  updateSpace(3, 3, [1, 5], true);
+  updateSpace(3, 3, [1, 0], true);
   updateSpace(4, 4, [1, 2, 4], false);
   updateSpace(5, 5, [1, 2, 3, 4], true);
-  updateSpace(6, 6, [1, 2, 3, 4, 5], false);
-  updateSpace(7, 7, [5], false);
+  updateSpace(6, 6, [1, 2, 3, 4, 0], false);
+  updateSpace(7, 7, [0], false);
   blockPath(7, 3);
+  updateSpace(7, 2, [], false);
 
   postStart(client);
   postRoll();

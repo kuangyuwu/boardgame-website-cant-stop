@@ -19,7 +19,7 @@ function initializeGameboard(pathLengths) {
     pathOuter.appendChild(pathInner);
     pathOuter.appendChild(pathNameOuter);
     pathNameOuter.appendChild(pathName);
-    for (let j = 1; j <= length; j++) {
+    for (let j = length - 1; j >= 0; j--) {
       const space = document.createElement("div");
       space.setAttribute("class", "space");
       space.setAttribute("id", `space-${i}-${j}`);
