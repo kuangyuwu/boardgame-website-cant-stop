@@ -168,8 +168,15 @@ class Server {
     }
     let block = [];
     for (const [path, length] of this.ruleSet.pathLengths.entries()) {
-      if (length != -1 && this.isComplete(path)) {
-        block.push(path);
+      if (length == -1) {
+        continue;
+      }
+      const n = this.isCompletedBy(path);
+      if (n != null) {
+        block.push({
+          path: path,
+          color: n,
+        });
       }
     }
     const data = {
@@ -295,17 +302,17 @@ class Server {
     this.nextMove();
   }
 
-  isComplete(path) {
-    for (const player of this.players) {
+  isCompletedBy(path) {
+    for (const [n, player] of this.players.entries()) {
       if (player.state[path] == 0) {
-        return true;
+        return n;
       }
     }
-    return false;
+    return null;
   }
 
   isValidPath(path, player) {
-    if (this.isComplete(path)) {
+    if (this.isCompletedBy(path) != null) {
       return false;
     }
     if (player.temp[path] > 0) {

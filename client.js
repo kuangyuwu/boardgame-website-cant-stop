@@ -169,8 +169,8 @@ class Client {
         updateSpace(i, j, space.colors, space.hasTemp);
       }
     }
-    for (const i of body.block) {
-      blockPath(i, 0);
+    for (const b of body.block) {
+      blockPath(b.path, b.color);
     }
     // this.sendToAll({
     //   type: "gameboard",
