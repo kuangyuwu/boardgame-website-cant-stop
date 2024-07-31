@@ -179,7 +179,11 @@ class Server {
       case "start":
         this.handlerStart(data.body);
         break;
-
+      case "roll":
+        this.handlerRoll();
+        break;
+      case "action":
+        this.handlerAction(data.body);
       default:
         console.log(`Unsupported type`);
         break;
