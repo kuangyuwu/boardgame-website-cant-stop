@@ -116,6 +116,15 @@ class Server {
     this.send(player, data);
   }
 
+  sendContinue() {
+    const player = this.players[this.playing];
+    const data = {
+      type: "continue",
+      body: null,
+    };
+    this.sendToAll(data);
+  }
+
   sendWinner() {
     const player = this.players[this.playing];
     const data = {
@@ -205,6 +214,16 @@ class Server {
         break;
       case "action":
         this.handlerAction(data.body);
+        break;
+      case "lose":
+        this.handlerLose();
+        break;
+      case "stop":
+        this.handlerStop();
+        break;
+      case "continue":
+        this.handlerContinue();
+        break;
       default:
         console.log(`Unsupported type`);
         break;
@@ -250,24 +269,16 @@ class Server {
   }
 
   handlerAction(body) {
+    const player = this.players[this.playing];
     const action = body.action;
-    switch (body.decision) {
-      case "lose":
-        this.loseTurn();
-        break;
-      case "stop":
-        this.stopTurn(action);
-        break;
-      case "continue":
-        this.continueTurn(action);
-        break;
-
-      default:
-        break;
+    for (const path of action) {
+      player.takeAction(path);
     }
+    this.sendGameboard();
+    this.sendContinue();
   }
 
-  loseTurn() {
+  handlerLose() {
     const player = this.players[this.playing];
     player.addMoves(this.moveCount);
     player.resetTemp();
@@ -276,12 +287,8 @@ class Server {
     this.nextPlayer();
   }
 
-  stopTurn(action) {
+  handlerStop() {
     const player = this.players[this.playing];
-    for (const path of action) {
-      player.takeAction(path);
-    }
-    player.addMoves(this.moveCount);
     player.updateState();
     player.resetTemp();
     this.sendGameboard();
@@ -293,12 +300,7 @@ class Server {
     this.nextPlayer();
   }
 
-  continueTurn(action) {
-    const player = this.players[this.playing];
-    for (const path of action) {
-      player.takeAction(path);
-    }
-    this.sendGameboard();
+  handlerContinue() {
     this.nextMove();
   }
 

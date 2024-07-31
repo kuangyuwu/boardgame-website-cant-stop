@@ -48,6 +48,7 @@ function postRoll(sendRoll) {
 }
 
 function postDices(points) {
+  clearFeed();
   let nodes = [];
   const text = document.createElement("span");
   text.innerHTML = "Dices:&nbsp;";
@@ -78,7 +79,7 @@ function postOptions(groups, options, sendAction) {
     const optionButton = document.createElement("button");
     optionButton.innerHTML = "Advance " + option.join();
     optionButton.onclick = () => {
-      postContinue(sendAction, option);
+      sendAction(option);
     };
     nodes.push(optionButton);
     const blank = document.createElement("span");
@@ -88,15 +89,16 @@ function postOptions(groups, options, sendAction) {
   postToFeed(nodes);
 }
 
-function postContinue(sendAction, action) {
+function postContinue(sendContinue, sendStop) {
+  clearFeed();
   let nodes = [];
   const continuePrompt = document.createElement("span");
-  continuePrompt.innerHTML = "Roll the dices:&nbsp;";
+  continuePrompt.innerHTML = "Continue?&nbsp;";
   nodes.push(continuePrompt);
   const continueButton = document.createElement("button");
   continueButton.innerHTML = "Continue";
   continueButton.onclick = () => {
-    sendAction("continue", action);
+    sendContinue();
   };
   nodes.push(continueButton);
   const blank = document.createElement("span");
@@ -105,13 +107,13 @@ function postContinue(sendAction, action) {
   const stopButton = document.createElement("button");
   stopButton.innerHTML = "Stop";
   stopButton.onclick = () => {
-    sendAction("stop", action);
+    sendStop();
   };
   nodes.push(stopButton);
   postToFeed(nodes);
 }
 
-function postTurnEnds(sendAction) {
+function postLose(sendLose) {
   let nodes = [];
   const text = document.createElement("span");
   text.innerHTML = "No valid actions: turn ends&nbsp;";
@@ -119,7 +121,7 @@ function postTurnEnds(sendAction) {
   const okButton = document.createElement("button");
   okButton.innerHTML = "Ok";
   okButton.onclick = () => {
-    sendAction("lose", null);
+    sendLose();
   };
   nodes.push(okButton);
   postToFeed(nodes);
@@ -146,6 +148,6 @@ export {
   postDices,
   postOptions,
   postContinue,
-  postTurnEnds,
+  postLose,
   postWinner,
 };

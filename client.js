@@ -6,7 +6,7 @@ import {
   postDices,
   postOptions,
   postContinue,
-  postTurnEnds,
+  postLose,
   postWinner,
 } from "./feed.js";
 import {
@@ -53,14 +53,40 @@ class Client {
     this.send(data);
   }
 
-  sendAction(decision, action) {
+  sendAction(action) {
     const data = {
       id: this.id,
       type: "action",
       body: {
-        decision: decision,
         action: action,
       },
+    };
+    this.send(data);
+  }
+
+  sendLose() {
+    const data = {
+      id: this.id,
+      type: "lose",
+      body: null,
+    };
+    this.send(data);
+  }
+
+  sendStop() {
+    const data = {
+      id: this.id,
+      type: "stop",
+      body: null,
+    };
+    this.send(data);
+  }
+
+  sendContinue() {
+    const data = {
+      id: this.id,
+      type: "continue",
+      body: null,
     };
     this.send(data);
   }
@@ -86,6 +112,9 @@ class Client {
         break;
       case "dices":
         this.handlerDices(data.body);
+        break;
+      case "continue":
+        this.handlerContinue();
         break;
       case "winner":
         this.handlerWinner(data.body);
@@ -151,8 +180,12 @@ class Client {
       this.sendAction.bind(this)
     );
     if (!body.hasOptions) {
-      postTurnEnds(this.sendAction.bind(this));
+      postLose(this.sendLose.bind(this));
     }
+  }
+
+  handlerContinue() {
+    postContinue(this.sendContinue.bind(this), this.sendStop.bind(this));
   }
 
   handlerWinner(body) {
