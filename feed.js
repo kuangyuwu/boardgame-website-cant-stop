@@ -3,7 +3,14 @@ function clearFeed() {
   feed.innerHTML = "";
 }
 
-function postToFeed(innerHTMLNodes) {
+function clearFeedAnd(callback) {
+  return () => {
+    clearFeed();
+    callback();
+  };
+}
+
+function postToFeed(...innerHTMLNodes) {
   const feed = document.getElementById("feed");
   const activityOuter = document.createElement("div");
   activityOuter.setAttribute("class", "activity-outer");
@@ -12,9 +19,131 @@ function postToFeed(innerHTMLNodes) {
 
   feed.appendChild(activityOuter);
   activityOuter.appendChild(activityInner);
-  for (const node of innerHTMLNodes) {
-    activityInner.appendChild(node);
+  activityInner.append(...innerHTMLNodes);
+}
+
+function textNode(content) {
+  const text = document.createElement("span");
+  text.innerHTML = content;
+  return text;
+}
+
+function buttonNode(buttonText, onClick) {
+  const button = document.createElement("button");
+  button.innerHTML = buttonText;
+  button.onclick = () => {
+    clearFeed();
+    onClick();
+  };
+  return button;
+}
+
+function diceNode(point) {
+  const dice = document.createElement("span");
+  dice.setAttribute("class", `dice-${point}`);
+  return dice;
+}
+
+function formNode(inputId, labelPrompt, buttonText, onSubmit) {
+  const form = document.createElement("form");
+  const label = document.createElement("label");
+  label.setAttribute("for", inputId);
+  label.textContent = labelPrompt;
+  const input = document.createElement("input");
+  input.type = "text";
+  input.id = inputId;
+  input.name = inputId;
+  input.required = true;
+  const button = document.createElement("button");
+  button.type = "submit";
+  button.textContent = buttonText;
+  form.appendChild(label);
+  form.appendChild(input);
+  form.appendChild(button);
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    const value = document.getElementById(inputId).value;
+    clearFeed();
+    onSubmit(value);
+  });
+
+  return form;
+}
+
+function postCreateUser(onSubmit) {
+  postToFeed(formNode("username", "Enter your username:", "Submit", onSubmit));
+}
+
+function postPrep(sendPrepNew, sendPrepJoin) {
+  postToFeed(buttonNode("Start a new game", sendPrepNew));
+  postToFeed(
+    formNode("game-id", "Enter game id to join: ", "Join", sendPrepJoin)
+  );
+}
+
+function postPrepUpdate(
+  gameId,
+  isHosting,
+  isReady,
+  sendPrepLeave,
+  sendPrepReady,
+  sendPrepUnready,
+  sendStart,
+  ...usernames
+) {
+  if (isHosting) {
+    postPrepHosting(gameId, sendPrepLeave);
+    postPrepUsernames(...usernames);
+    if (isReady) {
+      postPrepStart(sendStart);
+    }
+  } else {
+    postPrepJoined(gameId, sendPrepLeave);
+    postPrepUsernames(...usernames);
+    if (isReady) {
+      postPrepReady(sendPrepUnready);
+    } else {
+      postPrepNotReady(sendPrepReady);
+    }
   }
+}
+
+function postPrepHosting(gameId, sendPrepLeave) {
+  postToFeed(
+    textNode(`Hosting game room: ${gameId}`),
+    buttonNode("Leave", sendPrepLeave)
+  );
+}
+
+function postPrepJoined(gameId, sendPrepLeave) {
+  postToFeed(
+    textNode(`Game room: ${gameId}`),
+    buttonNode("Leave", sendPrepLeave)
+  );
+}
+
+function postPrepUsernames(...usernames) {
+  postToFeed(textNode("Players: " + usernames.join(", ")));
+}
+
+function postPrepNotReady(sendPrepReady) {
+  postToFeed(textNode("Ready to play?"), buttonNode("Start", sendPrepReady));
+}
+
+function postPrepReady(sendPrepUnready) {
+  postToFeed(
+    textNode("Ready to play, waiting for the host to start"),
+    buttonNode("Cancel", sendPrepUnready)
+  );
+}
+
+function postPrepStart(sendStart) {
+  postToFeed(textNode("All players are ready"), buttonNode("Start", sendStart));
+}
+
+function postRoomDismissed() {
+  postToFeed(textNode("The game was dismissed..."));
 }
 
 function postStart(sendStart) {
@@ -54,7 +183,7 @@ function postDices(points) {
   text.innerHTML = "Dices:&nbsp;";
   nodes.push(text);
   for (const point of points) {
-    nodes.push(dice(point));
+    nodes.push(diceNode(point));
   }
   postToFeed(nodes);
 }
@@ -63,7 +192,7 @@ function postOptions(groups, options, sendAction) {
   let nodes = [];
   for (const [i, group] of groups.entries()) {
     for (const point of group) {
-      nodes.push(dice(point));
+      nodes.push(diceNode(point));
     }
     if (i != groups.length - 1) {
       let text = document.createElement("span");
@@ -135,14 +264,11 @@ function postWinner(id) {
   postToFeed(nodes);
 }
 
-function dice(point) {
-  const dice = document.createElement("span");
-  dice.setAttribute("class", `dice-${point}`);
-  return dice;
-}
-
 export {
   clearFeed,
+  postCreateUser,
+  postPrep,
+  postPrepUpdate,
   postStart,
   postRoll,
   postDices,

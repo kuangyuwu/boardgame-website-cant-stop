@@ -1,6 +1,8 @@
 import { initializeGameboard, updateSpace, blockPath } from "./gameboard.js";
 import {
   clearFeed,
+  postPrep,
+  postPrepUpdate,
   postStart,
   postRoll,
   postDices,
@@ -8,6 +10,7 @@ import {
   postContinue,
   postLose,
   postWinner,
+  postCreateUser,
 } from "./feed.js";
 import {
   updateTurnCount,
@@ -18,35 +21,101 @@ import {
 } from "./side_panel.js";
 
 class Client {
-  constructor(id, server) {
-    this.id = id;
-    this.server = server;
-    this.connect();
+  constructor() {
+    this.username = "";
+    this.websocket = null;
   }
 
-  connect() {
-    console.log(`Connecting to the server...`);
-    this.server.connect(this);
+  createUser() {
+    console.log(this.username);
+    let websocket = new WebSocket(
+      `wss://localhost:8080/v1/user/${this.username}`
+    );
+    websocket.onmessage = async (event) => {
+      const text = await new Response(event.data).text();
+      const data = JSON.parse(text);
+      this.handle(data);
+    };
+    websocket.onopen = (_event) => {
+      this.sendReady();
+    };
+    this.websocket = websocket;
   }
 
   send(data) {
-    this.server.handle(data);
+    this.websocket.send(JSON.stringify(data));
   }
 
-  sendStart(i) {
+  sendReady() {
     const data = {
-      id: this.id,
-      type: "start",
+      type: "ready",
+      body: null,
+    };
+    this.send(data);
+  }
+
+  sendPrepNew() {
+    const data = {
+      type: "prepNew",
+      body: null,
+    };
+    this.send(data);
+  }
+
+  sendPrepJoin(gameId) {
+    const data = {
+      type: "prepJoin",
       body: {
-        ruleSet: i,
+        gameId: gameId,
       },
     };
     this.send(data);
   }
 
+  sendPrepLeave() {
+    const data = {
+      type: "prepLeave",
+      body: null,
+    };
+    this.send(data);
+  }
+
+  sendPrepReady() {
+    const data = {
+      type: "prepReady",
+      body: null,
+    };
+    this.send(data);
+  }
+
+  sendPrepUnready() {
+    const data = {
+      type: "prepUnready",
+      body: null,
+    };
+    this.send(data);
+  }
+
+  sendStart() {
+    const data = {
+      type: "start",
+      body: null,
+    };
+    this.send(data);
+  }
+
+  // sendStart(i) {
+  //   const data = {
+  //     type: "start",
+  //     body: {
+  //       ruleSet: i,
+  //     },
+  //   };
+  //   this.send(data);
+  // }
+
   sendRoll() {
     const data = {
-      id: this.id,
       type: "roll",
       body: null,
     };
@@ -55,7 +124,6 @@ class Client {
 
   sendAction(action) {
     const data = {
-      id: this.id,
       type: "action",
       body: {
         action: action,
@@ -66,7 +134,6 @@ class Client {
 
   sendLose() {
     const data = {
-      id: this.id,
       type: "lose",
       body: null,
     };
@@ -75,7 +142,6 @@ class Client {
 
   sendStop() {
     const data = {
-      id: this.id,
       type: "stop",
       body: null,
     };
@@ -84,7 +150,6 @@ class Client {
 
   sendContinue() {
     const data = {
-      id: this.id,
       type: "continue",
       body: null,
     };
@@ -95,9 +160,18 @@ class Client {
     console.log(`The client receives the following data:`);
     console.log(data);
     switch (data.type) {
-      case "start":
-        this.handlerStart(data.body);
+      case "error":
+        this.handleError(data.body);
         break;
+      case "prep":
+        this.handlePrep();
+        break;
+      case "prepUpdate":
+        this.handlePrepUpdate(data.body);
+        break;
+      // case "start":
+      //   this.handlerStart(data.body);
+      //   break;
       case "turnCount":
         this.handlerTurnCount(data.body);
         break;
@@ -125,8 +199,30 @@ class Client {
 
       default:
         console.log("Unsupported type");
+        console.log(data);
         break;
     }
+  }
+
+  handleError(body) {
+    console.log(body.error);
+  }
+
+  handlePrep() {
+    postPrep(this.sendPrepNew.bind(this), this.sendPrepJoin.bind(this));
+  }
+
+  handlePrepUpdate(data) {
+    postPrepUpdate(
+      data.gameId,
+      data.isHosting,
+      data.isReady,
+      this.sendPrepLeave.bind(this),
+      this.sendPrepReady.bind(this),
+      this.sendPrepUnready.bind(this),
+      this.sendStart.bind(this),
+      ...data.usernames
+    );
   }
 
   handlerStart(body) {
