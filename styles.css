@@ -26,7 +26,7 @@
 
 #counter-outer {
     width: 100%;
-    height: 100px;
+    height: 50px;
     background-color: lightseagreen;
     display: flex;
     align-items: center; 
@@ -40,7 +40,7 @@
 
 #scoreboard {
     width: 100%;
-    height: 450px;
+    height: 300px;
     background-color: lightblue;
     display: flex;
     flex-direction: column;
@@ -49,7 +49,7 @@
 
 .player-outer {
     width: 100%;
-    height: 100px;
+    height: 60px;
     background-color: lightskyblue;
     display: flex;
     align-items: center; 
@@ -59,6 +59,13 @@
 .player {
     width: 80%;
     font-size: larger;
+}
+
+#log {
+    height: 180px;
+    padding: 10px;
+    background-color: violet;
+    overflow: auto;
 }
 
 #gameboard {
