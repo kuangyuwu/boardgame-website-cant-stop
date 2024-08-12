@@ -76,6 +76,7 @@ function postCreateUser(onSubmit) {
 }
 
 function postPrep(sendPrepNew, sendPrepJoin) {
+  clearFeed();
   postToFeed(buttonNode("Start a new game", sendPrepNew));
   postToFeed(
     formNode("game-id", "Enter game id to join: ", "Join", sendPrepJoin)
@@ -92,6 +93,7 @@ function postPrepUpdate(
   sendStart,
   ...usernames
 ) {
+  clearFeed();
   if (isHosting) {
     postPrepHosting(gameId, sendPrepLeave);
     postPrepUsernames(...usernames);
@@ -128,7 +130,7 @@ function postPrepUsernames(...usernames) {
 }
 
 function postPrepNotReady(sendPrepReady) {
-  postToFeed(textNode("Ready to play?"), buttonNode("Start", sendPrepReady));
+  postToFeed(textNode("Ready to play?"), buttonNode("Ready", sendPrepReady));
 }
 
 function postPrepReady(sendPrepUnready) {
