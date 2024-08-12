@@ -169,9 +169,9 @@ class Client {
       case "prepUpdate":
         this.handlePrepUpdate(data.body);
         break;
-      // case "start":
-      //   this.handlerStart(data.body);
-      //   break;
+      case "start":
+        this.handleStart(data.body);
+        break;
       case "turnCount":
         this.handlerTurnCount(data.body);
         break;
@@ -225,8 +225,8 @@ class Client {
     );
   }
 
-  handlerStart(body) {
-    createPlayers(body.ids);
+  handleStart(body) {
+    createPlayers(body.usernames);
     initializeGameboard(body.pathLengths);
     clearFeed();
   }
