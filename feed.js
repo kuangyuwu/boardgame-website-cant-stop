@@ -3,13 +3,6 @@ function clearFeed() {
   feed.innerHTML = "";
 }
 
-function clearFeedAnd(callback) {
-  return () => {
-    clearFeed();
-    callback();
-  };
-}
-
 function postToFeed(...innerHTMLNodes) {
   const feed = document.getElementById("feed");
   const activityOuter = document.createElement("div");
@@ -76,15 +69,14 @@ function postCreateUser(onSubmit) {
 }
 
 function postPrep(sendPrepNew, sendPrepJoin) {
-  clearFeed();
-  postToFeed(buttonNode("Start a new game", sendPrepNew));
+  postToFeed(buttonNode("Create a new room", sendPrepNew));
   postToFeed(
-    formNode("game-id", "Enter game id to join: ", "Join", sendPrepJoin)
+    formNode("room-id", "Enter room id to join: ", "Join", sendPrepJoin)
   );
 }
 
 function postPrepUpdate(
-  gameId,
+  roomId,
   isHosting,
   isReady,
   sendPrepLeave,
@@ -93,15 +85,14 @@ function postPrepUpdate(
   sendStart,
   ...usernames
 ) {
-  clearFeed();
   if (isHosting) {
-    postPrepHosting(gameId, sendPrepLeave);
+    postPrepHosting(roomId, sendPrepLeave);
     postPrepUsernames(...usernames);
     if (isReady) {
       postPrepStart(sendStart);
     }
   } else {
-    postPrepJoined(gameId, sendPrepLeave);
+    postPrepJoined(roomId, sendPrepLeave);
     postPrepUsernames(...usernames);
     if (isReady) {
       postPrepReady(sendPrepUnready);
@@ -111,16 +102,16 @@ function postPrepUpdate(
   }
 }
 
-function postPrepHosting(gameId, sendPrepLeave) {
+function postPrepHosting(roomId, sendPrepLeave) {
   postToFeed(
-    textNode(`Hosting game room: ${gameId}`),
+    textNode(`Hosting room: ${roomId}`),
     buttonNode("Leave", sendPrepLeave)
   );
 }
 
-function postPrepJoined(gameId, sendPrepLeave) {
+function postPrepJoined(roomId, sendPrepLeave) {
   postToFeed(
-    textNode(`Game room: ${gameId}`),
+    textNode(`Room ID: ${roomId}`),
     buttonNode("Leave", sendPrepLeave)
   );
 }

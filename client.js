@@ -62,11 +62,11 @@ class Client {
     this.send(data);
   }
 
-  sendPrepJoin(gameId) {
+  sendPrepJoin(roomId) {
     const data = {
       type: "prepJoin",
       body: {
-        gameId: gameId,
+        roomId: roomId,
       },
     };
     this.send(data);
@@ -209,12 +209,14 @@ class Client {
   }
 
   handlePrep() {
+    clearFeed();
     postPrep(this.sendPrepNew.bind(this), this.sendPrepJoin.bind(this));
   }
 
   handlePrepUpdate(data) {
+    clearFeed();
     postPrepUpdate(
-      data.gameId,
+      data.roomId,
       data.isHosting,
       data.isReady,
       this.sendPrepLeave.bind(this),
