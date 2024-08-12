@@ -19,6 +19,7 @@ import {
   updatePlayer,
   resetSidePanel,
 } from "./side_panel.js";
+import { logEvent } from "./log.js";
 
 class Client {
   constructor() {
@@ -169,6 +170,9 @@ class Client {
       case "prepUpdate":
         this.handlePrepUpdate(data.body);
         break;
+      case "log":
+        this.handleLog(data.body);
+        break;
       case "start":
         this.handleStart(data.body);
         break;
@@ -225,6 +229,10 @@ class Client {
       this.sendStart.bind(this),
       ...data.usernames
     );
+  }
+
+  handleLog(body) {
+    logEvent(body.event);
   }
 
   handleStart(body) {
