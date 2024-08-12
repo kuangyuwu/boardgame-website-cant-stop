@@ -1,5 +1,6 @@
 function initializeGameboard(pathLengths) {
   const gameboard = document.getElementById("gameboard");
+  gameboard.innerHTML = "";
   for (const [i, length] of pathLengths.entries()) {
     if (length < 0) {
       continue;

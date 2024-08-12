@@ -11,7 +11,7 @@
 }
 
 #section-1 {
-    height: 550px;
+    height: 500px;
     background-color: yellow;
     display: flex;
     align-items: center; 
@@ -20,13 +20,13 @@
 
 #side-panel {
     width: 25%;
-    height: 550px;
+    height: 500px;
     background-color: lightcyan;
 }
 
 #counter-outer {
     width: 100%;
-    height: 100px;
+    height: 50px;
     background-color: lightseagreen;
     display: flex;
     align-items: center; 
@@ -34,13 +34,12 @@
 }
 
 .counter {
-    width: 38%;
-    font-size: larger;
+    width: 35%;
 }
 
 #scoreboard {
     width: 100%;
-    height: 450px;
+    height: 300px;
     background-color: lightblue;
     display: flex;
     flex-direction: column;
@@ -49,7 +48,7 @@
 
 .player-outer {
     width: 100%;
-    height: 100px;
+    height: 60px;
     background-color: lightskyblue;
     display: flex;
     align-items: center; 
@@ -58,12 +57,19 @@
 
 .player {
     width: 80%;
-    font-size: larger;
+}
+
+#log {
+    height: 130px;
+    padding: 10px;
+    background-color: violet;
+    font-size: small;
+    overflow: auto;
 }
 
 #gameboard {
     width: 75%;
-    height: 550px;
+    height: 500px;
     background-color: aquamarine;
     display: flex;
     align-items: center; 
@@ -71,15 +77,15 @@
 }
 
 .path-outer {
-    margin: 5px;
-    width: 40px;
-    height: 550px;
+    margin: 3px;
+    width: 30px;
+    height: 500px;
     background-color: chocolate;
 }
 
 .path-name-outer {
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     background-color: lightcoral;
     display: flex;
     align-items: center; 
@@ -91,8 +97,8 @@
 }
 
 .path-inner {
-    width: 40px;
-    height: 510px;
+    width: 30px;
+    height: 470px;
     background-color: antiquewhite;
     display: flex;
     flex-direction: column;
@@ -101,9 +107,8 @@
 }
 
 .space {
-    width: 30px;
-    height: 30px;
-    margin: 2px;
+    width: 25px;
+    height: 25px;
     border: 2px solid black;
     border-radius: 100%;
     background-color: pink;
@@ -114,36 +119,36 @@
 }
 
 .marker-0 {
-    width: 15px;
-    height: 15px;
+    width: 12px;
+    height: 12px;
     border-radius: 100%;
     background-color: blue;
 }
 
 .marker-1 {
-    width: 15px;
-    height: 15px;
+    width: 12px;
+    height: 12px;
     border-radius: 100%;
     background-color: red;
 }
 
 .marker-2 {
-    width: 15px;
-    height: 15px;
+    width: 12px;
+    height: 12px;
     border-radius: 100%;
     background-color: green;
 }
 
 .marker-3 {
-    width: 15px;
-    height: 15px;
+    width: 12px;
+    height: 12px;
     border-radius: 100%;
     background-color: yellow;
 }
 
 .marker-4 {
-    width: 15px;
-    height: 15px;
+    width: 12px;
+    height: 12px;
     border-radius: 100%;
     background-color: blueviolet;
 }
@@ -246,8 +251,8 @@
 }
 
 .activity-outer {
-    margin: 5px;
-    height: 30px;
+    margin: 2px;
+    height: 25px;
     background-color: greenyellow;
     display: flex;
     align-items: center; 
@@ -255,65 +260,68 @@
 }
 
 .activity-inner {
-    font-size: large;
     display: flex;
     align-items: center; 
 }
 
-.button {
+button {
+    margin: 5px;
+}
+
+input {
     margin: 5px;
 }
 
 .dice-1 {
     display: inline-block;
-    width: 25px;
-    height: 25px;
-    margin: 5px;
+    width: 20px;
+    height: 20px;
+    margin: 3px;
     background-image: url(assets/icon_dice_1.svg);
     background-size: cover;
 }
 
 .dice-2 {
     display: inline-block;
-    width: 25px;
-    height: 25px;
-    margin: 5px;
+    width: 20px;
+    height: 20px;
+    margin: 3px;
     background-image: url(assets/icon_dice_2.svg);
     background-size: cover;
 }
 
 .dice-3 {
     display: inline-block;
-    width: 25px;
-    height: 25px;
-    margin: 5px;
+    width: 20px;
+    height: 20px;
+    margin: 3px;
     background-image: url(assets/icon_dice_3.svg);
     background-size: cover;
 }
 
 .dice-4 {
     display: inline-block;
-    width: 25px;
-    height: 25px;
-    margin: 5px;
+    width: 20px;
+    height: 20px;
+    margin: 3px;
     background-image: url(assets/icon_dice_4.svg);
     background-size: cover;
 }
 
 .dice-5 {
     display: inline-block;
-    width: 25px;
-    height: 25px;
-    margin: 5px;
+    width: 20px;
+    height: 20px;
+    margin: 3px;
     background-image: url(assets/icon_dice_5.svg);
     background-size: cover;
 }
 
 .dice-6 {
     display: inline-block;
-    width: 25px;
-    height: 25px;
-    margin: 5px;
+    width: 20px;
+    height: 20px;
+    margin: 3px;
     background-image: url(assets/icon_dice_6.svg);
     background-size: cover;
 }

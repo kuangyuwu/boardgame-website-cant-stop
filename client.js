@@ -1,12 +1,13 @@
 import { initializeGameboard, updateSpace, blockPath } from "./gameboard.js";
 import {
   clearFeed,
-  postStart,
+  postPrep,
+  postPrepUpdate,
   postRoll,
-  postDices,
-  postOptions,
+  postPoints,
+  postOption,
   postContinue,
-  postLose,
+  postFail,
   postWinner,
 } from "./feed.js";
 import {
@@ -16,37 +17,92 @@ import {
   updatePlayer,
   resetSidePanel,
 } from "./side_panel.js";
+import { logEvent } from "./log.js";
 
 class Client {
-  constructor(id, server) {
-    this.id = id;
-    this.server = server;
-    this.connect();
+  constructor() {
+    this.username = "";
+    this.websocket = null;
   }
 
-  connect() {
-    console.log(`Connecting to the server...`);
-    this.server.connect(this);
+  createUser() {
+    console.log(this.username);
+    let websocket = new WebSocket(`ws://52.15.230.77/v1/user/${this.username}`);
+    websocket.onmessage = async (event) => {
+      const text = await new Response(event.data).text();
+      const data = JSON.parse(text);
+      this.handle(data);
+    };
+    websocket.onopen = (_event) => {
+      this.sendReady();
+    };
+    this.websocket = websocket;
   }
 
   send(data) {
-    this.server.handle(data);
+    this.websocket.send(JSON.stringify(data));
   }
 
-  sendStart(i) {
+  sendReady() {
     const data = {
-      id: this.id,
-      type: "start",
+      type: "ready",
+      body: null,
+    };
+    this.send(data);
+  }
+
+  sendPrepNew() {
+    const data = {
+      type: "prepNew",
+      body: null,
+    };
+    this.send(data);
+  }
+
+  sendPrepJoin(roomId) {
+    const data = {
+      type: "prepJoin",
       body: {
-        ruleSet: i,
+        roomId: roomId,
       },
+    };
+    this.send(data);
+  }
+
+  sendPrepLeave() {
+    const data = {
+      type: "prepLeave",
+      body: null,
+    };
+    this.send(data);
+  }
+
+  sendPrepReady() {
+    const data = {
+      type: "prepReady",
+      body: null,
+    };
+    this.send(data);
+  }
+
+  sendPrepUnready() {
+    const data = {
+      type: "prepUnready",
+      body: null,
+    };
+    this.send(data);
+  }
+
+  sendStart() {
+    const data = {
+      type: "start",
+      body: null,
     };
     this.send(data);
   }
 
   sendRoll() {
     const data = {
-      id: this.id,
       type: "roll",
       body: null,
     };
@@ -55,8 +111,7 @@ class Client {
 
   sendAction(action) {
     const data = {
-      id: this.id,
-      type: "action",
+      type: "act",
       body: {
         action: action,
       },
@@ -64,28 +119,39 @@ class Client {
     this.send(data);
   }
 
-  sendLose() {
+  sendFail() {
     const data = {
-      id: this.id,
-      type: "lose",
-      body: null,
+      type: "confirm",
+      body: {
+        willContinue: false,
+      },
     };
     this.send(data);
   }
 
   sendStop() {
     const data = {
-      id: this.id,
-      type: "stop",
-      body: null,
+      type: "confirm",
+      body: {
+        willContinue: false,
+      },
     };
     this.send(data);
   }
 
   sendContinue() {
     const data = {
-      id: this.id,
-      type: "continue",
+      type: "confirm",
+      body: {
+        willContinue: true,
+      },
+    };
+    this.send(data);
+  }
+
+  sendEndGame() {
+    const data = {
+      type: "exit",
       body: null,
     };
     this.send(data);
@@ -95,114 +161,134 @@ class Client {
     console.log(`The client receives the following data:`);
     console.log(data);
     switch (data.type) {
+      case "error":
+        this.handleError(data.body);
+        break;
+      case "prep":
+        this.handlePrep();
+        break;
+      case "prepUpdate":
+        this.handlePrepUpdate(data.body);
+        break;
+      case "log":
+        this.handleLog(data.body);
+        break;
       case "start":
-        this.handlerStart(data.body);
+        this.handleStart(data.body);
         break;
       case "turnCount":
-        this.handlerTurnCount(data.body);
+        this.handleTurnCount(data.body);
         break;
       case "moveCount":
-        this.handlerMoveCount(data.body);
+        this.handleMoveCount(data.body);
         break;
       case "player":
-        this.handlerPlayer(data.body);
+        this.handlePlayer(data.body);
         break;
       case "roll":
-        this.handlerRoll();
+        this.handleRoll();
         break;
-      case "dices":
-        this.handlerDices(data.body);
+      case "result":
+        this.handleResult(data.body);
         break;
-      case "continue":
-        this.handlerContinue();
+      case "confirm":
+        this.handleContinue();
         break;
       case "winner":
-        this.handlerWinner(data.body);
+        this.handleWinner(data.body);
         break;
       case "gameboard":
-        this.handlerGameboard(data.body);
+        this.handleGameboard(data.body);
         break;
 
       default:
         console.log("Unsupported type");
+        console.log(data);
         break;
     }
   }
 
-  handlerStart(body) {
-    createPlayers(body.ids);
+  handleError(body) {
+    console.log(body.error);
+  }
+
+  handlePrep() {
+    clearFeed();
+    postPrep(this.sendPrepNew.bind(this), this.sendPrepJoin.bind(this));
+  }
+
+  handlePrepUpdate(data) {
+    clearFeed();
+    postPrepUpdate(
+      data.roomId,
+      data.isHosting,
+      data.isReady,
+      this.sendPrepLeave.bind(this),
+      this.sendPrepReady.bind(this),
+      this.sendPrepUnready.bind(this),
+      this.sendStart.bind(this),
+      ...data.usernames
+    );
+  }
+
+  handleLog(body) {
+    logEvent(body.content);
+  }
+
+  handleStart(body) {
+    createPlayers(body.usernames);
     initializeGameboard(body.pathLengths);
     clearFeed();
   }
 
-  handlerTurnCount(body) {
+  handleTurnCount(body) {
     updateTurnCount(body.turnCount);
   }
 
-  handlerPlayer(body) {
-    updatePlayer(body.id, body.isPlaying, body.score);
+  handlePlayer(body) {
+    updatePlayer(body.username, body.isPlaying, body.score);
   }
 
-  handlerMoveCount(body) {
+  handleMoveCount(body) {
     updateMoveCount(body.moveCount);
   }
 
-  handlerRoll() {
+  handleRoll() {
     clearFeed();
     postRoll(this.sendRoll.bind(this));
   }
 
-  handlerDices(body) {
-    const dices = body.dices;
-    postDices(dices);
-    postOptions(
-      [
-        [dices[0], dices[1]],
-        [dices[2], dices[3]],
-      ],
-      body.options[0],
-      this.sendAction.bind(this)
-    );
-    postOptions(
-      [
-        [dices[0], dices[2]],
-        [dices[1], dices[3]],
-      ],
-      body.options[1],
-      this.sendAction.bind(this)
-    );
-    postOptions(
-      [
-        [dices[0], dices[3]],
-        [dices[1], dices[2]],
-      ],
-      body.options[2],
-      this.sendAction.bind(this)
-    );
-    if (!body.hasOptions) {
-      postLose(this.sendLose.bind(this));
+  handleResult(body) {
+    clearFeed();
+    postPoints(body.points);
+    for (const option of body.options) {
+      postOption(option.grouping, option.actions, this.sendAction.bind(this));
+    }
+    if (body.failed) {
+      postFail(this.sendFail.bind(this));
     }
   }
 
-  handlerContinue() {
+  handleContinue() {
+    clearFeed();
     postContinue(this.sendContinue.bind(this), this.sendStop.bind(this));
   }
 
-  handlerWinner(body) {
+  handleWinner(body) {
     clearFeed();
-    postWinner(body.winner);
+    postWinner(body.winner, this.sendEndGame.bind(this));
   }
 
-  handlerGameboard(body) {
+  handleGameboard(body) {
     for (const [i, path] of body.gameboard.entries()) {
-      if (path == null) {
+      if (path.length == 0) {
         continue;
       }
       for (const [j, space] of path.entries()) {
         updateSpace(i, j, space.colors, space.hasTemp);
       }
     }
-    for (const b of body.block) {
+    for (const b of body.blockedPaths) {
       blockPath(b.path, b.color);
     }
     // this.sendToAll({
