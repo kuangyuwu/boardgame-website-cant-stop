@@ -156,6 +156,14 @@ class Client {
     this.send(data);
   }
 
+  sendEndGame() {
+    const data = {
+      type: "endGame",
+      body: null,
+    };
+    this.send(data);
+  }
+
   handle(data) {
     console.log(`The client receives the following data:`);
     console.log(data);
@@ -275,7 +283,7 @@ class Client {
 
   handleWinner(body) {
     clearFeed();
-    postWinner(body.winner);
+    postWinner(body.winner, this.sendEndGame.bind(this));
   }
 
   handleGameboard(body) {

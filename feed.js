@@ -177,7 +177,7 @@ function postOption(grouping, actions, sendAction) {
 function postContinue(sendContinue, sendStop) {
   postToFeed(
     textNode("Continue?&nbsp;"),
-    buttonNode("Continue", sendContinue),
+    buttonNode("Continue and roll", sendContinue),
     buttonNode("Stop", sendStop)
   );
 }
@@ -189,8 +189,11 @@ function postFail(sendFail) {
   );
 }
 
-function postWinner(username) {
-  postToFeed(textNode(`Game over, winner is ${username}`));
+function postWinner(username, sendEndGame) {
+  postToFeed(
+    textNode(`Game over, winner is ${username}`),
+    buttonNode("OK", sendEndGame)
+  );
 }
 
 export {
