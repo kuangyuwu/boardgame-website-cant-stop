@@ -3,12 +3,11 @@ import {
   clearFeed,
   postPrep,
   postPrepUpdate,
-  postStart,
   postRoll,
-  postDices,
-  postOptions,
+  postPoints,
+  postOption,
   postContinue,
-  postLose,
+  postFail,
   postWinner,
   postCreateUser,
 } from "./feed.js";
@@ -133,9 +132,9 @@ class Client {
     this.send(data);
   }
 
-  sendLose() {
+  sendFail() {
     const data = {
-      type: "lose",
+      type: "fail",
       body: null,
     };
     this.send(data);
@@ -177,28 +176,28 @@ class Client {
         this.handleStart(data.body);
         break;
       case "turnCount":
-        this.handlerTurnCount(data.body);
+        this.handleTurnCount(data.body);
         break;
       case "moveCount":
-        this.handlerMoveCount(data.body);
+        this.handleMoveCount(data.body);
         break;
       case "player":
-        this.handlerPlayer(data.body);
+        this.handlePlayer(data.body);
         break;
       case "roll":
-        this.handlerRoll();
+        this.handleRoll();
         break;
-      case "dices":
-        this.handlerDices(data.body);
+      case "result":
+        this.handleResult(data.body);
         break;
       case "continue":
-        this.handlerContinue();
+        this.handleContinue();
         break;
       case "winner":
-        this.handlerWinner(data.body);
+        this.handleWinner(data.body);
         break;
       case "gameboard":
-        this.handlerGameboard(data.body);
+        this.handleGameboard(data.body);
         break;
 
       default:
@@ -241,74 +240,54 @@ class Client {
     clearFeed();
   }
 
-  handlerTurnCount(body) {
+  handleTurnCount(body) {
     updateTurnCount(body.turnCount);
   }
 
-  handlerPlayer(body) {
-    updatePlayer(body.id, body.isPlaying, body.score);
+  handlePlayer(body) {
+    updatePlayer(body.username, body.isPlaying, body.score);
   }
 
-  handlerMoveCount(body) {
+  handleMoveCount(body) {
     updateMoveCount(body.moveCount);
   }
 
-  handlerRoll() {
+  handleRoll() {
     clearFeed();
     postRoll(this.sendRoll.bind(this));
   }
 
-  handlerDices(body) {
-    const dices = body.dices;
-    postDices(dices);
-    postOptions(
-      [
-        [dices[0], dices[1]],
-        [dices[2], dices[3]],
-      ],
-      body.options[0],
-      this.sendAction.bind(this)
-    );
-    postOptions(
-      [
-        [dices[0], dices[2]],
-        [dices[1], dices[3]],
-      ],
-      body.options[1],
-      this.sendAction.bind(this)
-    );
-    postOptions(
-      [
-        [dices[0], dices[3]],
-        [dices[1], dices[2]],
-      ],
-      body.options[2],
-      this.sendAction.bind(this)
-    );
+  handleResult(body) {
+    clearFeed();
+    postPoints(body.points);
+    for (const option of body.options) {
+      postOption(option.grouping, option.actions, this.sendAction.bind(this));
+    }
     if (!body.hasOptions) {
-      postLose(this.sendLose.bind(this));
+      postFail(this.sendFail.bind(this));
     }
   }
 
-  handlerContinue() {
+  handleContinue() {
+    clearFeed();
     postContinue(this.sendContinue.bind(this), this.sendStop.bind(this));
   }
 
-  handlerWinner(body) {
+  handleWinner(body) {
     clearFeed();
     postWinner(body.winner);
   }
 
-  handlerGameboard(body) {
+  handleGameboard(body) {
     for (const [i, path] of body.gameboard.entries()) {
-      if (path == null) {
+      if (path.length == 0) {
         continue;
       }
       for (const [j, space] of path.entries()) {
         updateSpace(i, j, space.colors, space.hasTemp);
       }
     }
-    for (const b of body.block) {
+    for (const b of body.blocked) {
       blockPath(b.path, b.color);
     }
     // this.sendToAll({

@@ -34,8 +34,8 @@
 }
 
 .counter {
-    width: 38%;
-    font-size: larger;
+    width: 35%;
+    font-size: large;
 }
 
 #scoreboard {
@@ -58,7 +58,7 @@
 
 .player {
     width: 80%;
-    font-size: larger;
+    font-size: large;
 }
 
 #log {

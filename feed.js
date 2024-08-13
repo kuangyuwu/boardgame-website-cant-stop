@@ -139,122 +139,58 @@ function postRoomDismissed() {
   postToFeed(textNode("The game was dismissed..."));
 }
 
-function postStart(sendStart) {
-  let nodes = [];
-  const startPrompt = document.createElement("span");
-  startPrompt.innerHTML = "Start a new game:&nbsp;";
-  nodes.push(startPrompt);
-  for (let i = 0; i < 1; i++) {
-    let startButton = document.createElement("button");
-    startButton.innerHTML = "Start";
-    startButton.onclick = () => {
-      sendStart(i);
-    };
-    nodes.push(startButton);
-  }
-  postToFeed(nodes);
-}
-
 function postRoll(sendRoll) {
-  let nodes = [];
-  const rollPrompt = document.createElement("span");
-  rollPrompt.innerHTML = "Roll the dices:&nbsp;";
-  nodes.push(rollPrompt);
-  const rollButton = document.createElement("button");
-  rollButton.innerHTML = "Roll";
-  rollButton.onclick = () => {
-    sendRoll();
-  };
-  nodes.push(rollButton);
-  postToFeed(nodes);
+  postToFeed(textNode("Roll the dices:"), buttonNode("Roll", sendRoll));
 }
 
-function postDices(points) {
-  clearFeed();
-  let nodes = [];
-  const text = document.createElement("span");
-  text.innerHTML = "Dices:&nbsp;";
-  nodes.push(text);
-  for (const point of points) {
-    nodes.push(diceNode(point));
-  }
-  postToFeed(nodes);
+function postPoints(points) {
+  console.log(points);
+  console.log(points.map(diceNode));
+  postToFeed(textNode("Dices:&nbsp;"), ...points.map(diceNode));
 }
 
-function postOptions(groups, options, sendAction) {
+function postOption(grouping, actions, sendAction) {
   let nodes = [];
-  for (const [i, group] of groups.entries()) {
+  for (const [i, group] of grouping.entries()) {
     for (const point of group) {
       nodes.push(diceNode(point));
     }
-    if (i != groups.length - 1) {
-      let text = document.createElement("span");
-      text.innerHTML = "&nbsp;,&nbsp;";
-      nodes.push(text);
+    if (i != grouping.length - 1) {
+      nodes.push(textNode("&nbsp;,&nbsp;"));
     } else {
-      let text = document.createElement("span");
-      text.innerHTML = "&nbsp;:&nbsp;";
-      nodes.push(text);
+      nodes.push(textNode("&nbsp;:&nbsp;"));
     }
   }
-  for (const option of options) {
-    const optionButton = document.createElement("button");
-    optionButton.innerHTML = "Advance " + option.join();
-    optionButton.onclick = () => {
-      sendAction(option);
-    };
-    nodes.push(optionButton);
-    const blank = document.createElement("span");
-    blank.innerHTML = "&nbsp;";
-    nodes.push(blank);
+  if (actions.length == 0) {
+    nodes.push(textNode("no valid options"));
   }
-  postToFeed(nodes);
+  for (const action of actions) {
+    nodes.push(
+      buttonNode("Advance " + action.join(), () => {
+        sendAction(action);
+      })
+    );
+  }
+  postToFeed(...nodes);
 }
 
 function postContinue(sendContinue, sendStop) {
-  clearFeed();
-  let nodes = [];
-  const continuePrompt = document.createElement("span");
-  continuePrompt.innerHTML = "Continue?&nbsp;";
-  nodes.push(continuePrompt);
-  const continueButton = document.createElement("button");
-  continueButton.innerHTML = "Continue";
-  continueButton.onclick = () => {
-    sendContinue();
-  };
-  nodes.push(continueButton);
-  const blank = document.createElement("span");
-  blank.innerHTML = "&nbsp;";
-  nodes.push(blank);
-  const stopButton = document.createElement("button");
-  stopButton.innerHTML = "Stop";
-  stopButton.onclick = () => {
-    sendStop();
-  };
-  nodes.push(stopButton);
-  postToFeed(nodes);
+  postToFeed(
+    textNode("Continue?&nbsp;"),
+    buttonNode("Continue", sendContinue),
+    buttonNode("Stop", sendStop)
+  );
 }
 
-function postLose(sendLose) {
-  let nodes = [];
-  const text = document.createElement("span");
-  text.innerHTML = "No valid actions: turn ends&nbsp;";
-  nodes.push(text);
-  const okButton = document.createElement("button");
-  okButton.innerHTML = "Ok";
-  okButton.onclick = () => {
-    sendLose();
-  };
-  nodes.push(okButton);
-  postToFeed(nodes);
+function postFail(sendFail) {
+  postToFeed(
+    textNode("No valid actions, turn failed&nbsp;"),
+    buttonNode("Ok", sendFail)
+  );
 }
 
-function postWinner(id) {
-  let nodes = [];
-  const text = document.createElement("span");
-  text.innerHTML = `Winner is ${id}`;
-  nodes.push(text);
-  postToFeed(nodes);
+function postWinner(username) {
+  postToFeed(textNode(`Game over, winner is ${username}`));
 }
 
 export {
@@ -262,11 +198,10 @@ export {
   postCreateUser,
   postPrep,
   postPrepUpdate,
-  postStart,
   postRoll,
-  postDices,
-  postOptions,
+  postPoints,
+  postOption,
   postContinue,
-  postLose,
+  postFail,
   postWinner,
 };
