@@ -9,7 +9,6 @@ import {
   postContinue,
   postFail,
   postWinner,
-  postCreateUser,
 } from "./feed.js";
 import {
   updateTurnCount,
