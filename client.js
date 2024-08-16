@@ -27,9 +27,7 @@ class Client {
 
   createUser() {
     console.log(this.username);
-    let websocket = new WebSocket(
-      `wss://localhost:8080/v1/user/${this.username}`
-    );
+    let websocket = new WebSocket(`ws://52.15.230.77/v1/user/${this.username}`);
     websocket.onmessage = async (event) => {
       const text = await new Response(event.data).text();
       const data = JSON.parse(text);
@@ -103,16 +101,6 @@ class Client {
     this.send(data);
   }
 
-  // sendStart(i) {
-  //   const data = {
-  //     type: "start",
-  //     body: {
-  //       ruleSet: i,
-  //     },
-  //   };
-  //   this.send(data);
-  // }
-
   sendRoll() {
     const data = {
       type: "roll",
@@ -123,7 +111,7 @@ class Client {
 
   sendAction(action) {
     const data = {
-      type: "action",
+      type: "act",
       body: {
         action: action,
       },
@@ -133,31 +121,37 @@ class Client {
 
   sendFail() {
     const data = {
-      type: "fail",
-      body: null,
+      type: "confirm",
+      body: {
+        willContinue: false,
+      },
     };
     this.send(data);
   }
 
   sendStop() {
     const data = {
-      type: "stop",
-      body: null,
+      type: "confirm",
+      body: {
+        willContinue: false,
+      },
     };
     this.send(data);
   }
 
   sendContinue() {
     const data = {
-      type: "continue",
-      body: null,
+      type: "confirm",
+      body: {
+        willContinue: true,
+      },
     };
     this.send(data);
   }
 
   sendEndGame() {
     const data = {
-      type: "endGame",
+      type: "exit",
       body: null,
     };
     this.send(data);
@@ -197,7 +191,7 @@ class Client {
       case "result":
         this.handleResult(data.body);
         break;
-      case "continue":
+      case "confirm":
         this.handleContinue();
         break;
       case "winner":
@@ -238,7 +232,7 @@ class Client {
   }
 
   handleLog(body) {
-    logEvent(body.event);
+    logEvent(body.content);
   }
 
   handleStart(body) {
@@ -270,7 +264,7 @@ class Client {
     for (const option of body.options) {
       postOption(option.grouping, option.actions, this.sendAction.bind(this));
     }
-    if (!body.hasOptions) {
+    if (body.failed) {
       postFail(this.sendFail.bind(this));
     }
   }
@@ -294,7 +288,7 @@ class Client {
         updateSpace(i, j, space.colors, space.hasTemp);
       }
     }
-    for (const b of body.blocked) {
+    for (const b of body.blockedPaths) {
       blockPath(b.path, b.color);
     }
     // this.sendToAll({

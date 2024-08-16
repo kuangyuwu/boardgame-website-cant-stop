@@ -10,6 +10,7 @@ function updateMoveCount(moveCount) {
 
 function createPlayers(usernames) {
   const scoreboard = document.getElementById("scoreboard");
+  scoreboard.innerHTML = "";
   for (const username of usernames) {
     const playerOuter = document.createElement("div");
     playerOuter.setAttribute("class", "player-outer");
