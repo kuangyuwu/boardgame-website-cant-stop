@@ -1,6 +1,7 @@
 import { initializeGameboard, updateSpace, blockPath } from "./gameboard.js";
 import {
   clearFeed,
+  postChooseRuleset,
   postPrep,
   postPrepUpdate,
   postRoll,
@@ -9,6 +10,7 @@ import {
   postContinue,
   postFail,
   postWinner,
+  postCreateUser,
 } from "./feed.js";
 import {
   updateTurnCount,
@@ -18,16 +20,19 @@ import {
   resetSidePanel,
 } from "./side_panel.js";
 import { logEvent } from "./log.js";
+import { debugLog } from "./debug.js";
 
 class Client {
   constructor() {
     this.username = "";
+    this.choosingRuleset = false;
     this.websocket = null;
   }
 
-  createUser() {
-    console.log(this.username);
-    let websocket = new WebSocket(`ws://52.15.230.77/v1/user/${this.username}`);
+  connect() {
+    debugLog("connect");
+    let websocket = new WebSocket(`ws://cant-stop-backend.kuangyuwu.com`);
+    // let websocket = new WebSocket(`ws://localhost:8080/`);
     websocket.onmessage = async (event) => {
       const text = await new Response(event.data).text();
       const data = JSON.parse(text);
@@ -39,6 +44,21 @@ class Client {
     this.websocket = websocket;
   }
 
+  // createUser() {
+  //   // console.log(this.username);
+  //   let websocket = new WebSocket(`ws://cant-stop.kuangyuwu.com`);
+  //   // let websocket = new WebSocket(`wss://localhost:8080/`);
+  //   websocket.onmessage = async (event) => {
+  //     const text = await new Response(event.data).text();
+  //     const data = JSON.parse(text);
+  //     this.handle(data);
+  //   };
+  //   websocket.onopen = (_event) => {
+  //     this.sendReady(this.username);
+  //   };
+  //   this.websocket = websocket;
+  // }
+
   send(data) {
     this.websocket.send(JSON.stringify(data));
   }
@@ -47,6 +67,26 @@ class Client {
     const data = {
       type: "ready",
       body: null,
+    };
+    this.send(data);
+  }
+
+  sendUsername(username) {
+    const data = {
+      type: "username",
+      body: {
+        username: username,
+      },
+    };
+    this.send(data);
+  }
+
+  sendRuleset(ruleset) {
+    const data = {
+      type: "ruleset",
+      body: {
+        ruleset: ruleset,
+      },
     };
     this.send(data);
   }
@@ -158,11 +198,14 @@ class Client {
   }
 
   handle(data) {
-    console.log(`The client receives the following data:`);
-    console.log(data);
+    debugLog(`The client receives the following data:`);
+    debugLog(data);
     switch (data.type) {
       case "error":
         this.handleError(data.body);
+        break;
+      case "username":
+        this.handleUsername();
         break;
       case "prep":
         this.handlePrep();
@@ -212,6 +255,11 @@ class Client {
     console.log(body.error);
   }
 
+  handleUsername() {
+    clearFeed();
+    postCreateUser(this.sendUsername.bind(this));
+  }
+
   handlePrep() {
     clearFeed();
     postPrep(this.sendPrepNew.bind(this), this.sendPrepJoin.bind(this));
@@ -219,10 +267,16 @@ class Client {
 
   handlePrepUpdate(data) {
     clearFeed();
+    if (data.ruleset == 0 && data.isHosting) {
+      postChooseRuleset([2, 3, 4], this.sendRuleset.bind(this));
+      return;
+    }
     postPrepUpdate(
       data.roomId,
+      data.ruleset,
       data.isHosting,
       data.isReady,
+      this.sendRuleset.bind(this),
       this.sendPrepLeave.bind(this),
       this.sendPrepReady.bind(this),
       this.sendPrepUnready.bind(this),

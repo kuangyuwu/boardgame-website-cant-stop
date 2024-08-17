@@ -1,9 +1,12 @@
+let feedLocked = false;
+
 function clearFeed() {
   const feed = document.getElementById("feed");
   feed.innerHTML = "";
 }
 
 function postToFeed(...innerHTMLNodes) {
+  if (feedLocked) return;
   const feed = document.getElementById("feed");
   const activityOuter = document.createElement("div");
   activityOuter.setAttribute("class", "activity-outer");
@@ -64,8 +67,12 @@ function formNode(inputId, labelPrompt, buttonText, onSubmit) {
   return form;
 }
 
+function postConnect(onClick) {
+  postToFeed(buttonNode("Start playing", onClick));
+}
+
 function postCreateUser(onSubmit) {
-  postToFeed(formNode("username", "Enter your username:", "Submit", onSubmit));
+  postToFeed(formNode("username", "Enter a username:", "Submit", onSubmit));
 }
 
 function postPrep(sendPrepNew, sendPrepJoin) {
@@ -75,10 +82,27 @@ function postPrep(sendPrepNew, sendPrepJoin) {
   );
 }
 
+function postChooseRuleset(rulesets, sendRuleset) {
+  let nodes = [textNode("Choose a game mode: ")];
+  for (const i of rulesets) {
+    nodes.push(
+      buttonNode(i + " dices", () => {
+        feedLocked = false;
+        sendRuleset(i);
+      })
+    );
+  }
+  feedLocked = false;
+  postToFeed(...nodes);
+  feedLocked = true;
+}
+
 function postPrepUpdate(
   roomId,
+  ruleset,
   isHosting,
   isReady,
+  sendRuleset,
   sendPrepLeave,
   sendPrepReady,
   sendPrepUnready,
@@ -87,12 +111,14 @@ function postPrepUpdate(
 ) {
   if (isHosting) {
     postPrepHosting(roomId, sendPrepLeave);
+    postRuleset(ruleset, isHosting, sendRuleset);
     postPrepUsernames(...usernames);
     if (isReady) {
       postPrepStart(sendStart);
     }
   } else {
     postPrepJoined(roomId, sendPrepLeave);
+    postRuleset(ruleset, isHosting, sendRuleset);
     postPrepUsernames(...usernames);
     if (isReady) {
       postPrepReady(sendPrepUnready);
@@ -100,6 +126,22 @@ function postPrepUpdate(
       postPrepNotReady(sendPrepReady);
     }
   }
+}
+
+function postRuleset(ruleset, isHosting, sendRuleset) {
+  if (ruleset == 0) {
+    postToFeed(textNode("Game mode: choosing..."));
+    return;
+  }
+  let nodes = [textNode(`Game mode: ${ruleset} dices`)];
+  if (isHosting) {
+    nodes.push(
+      buttonNode("Change game mode", () => {
+        sendRuleset(0);
+      })
+    );
+  }
+  postToFeed(...nodes);
 }
 
 function postPrepHosting(roomId, sendPrepLeave) {
@@ -198,7 +240,9 @@ function postWinner(username, sendEndGame) {
 
 export {
   clearFeed,
+  postConnect,
   postCreateUser,
+  postChooseRuleset,
   postPrep,
   postPrepUpdate,
   postRoll,
