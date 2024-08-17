@@ -26,15 +26,16 @@ class Client {
   }
 
   createUser() {
-    console.log(this.username);
-    let websocket = new WebSocket(`ws://52.15.230.77/v1/user/${this.username}`);
+    // console.log(this.username);
+    let websocket = new WebSocket(`ws://cant-stop.kuangyuwu.com`);
+    // let websocket = new WebSocket(`wss://localhost:8080/`);
     websocket.onmessage = async (event) => {
       const text = await new Response(event.data).text();
       const data = JSON.parse(text);
       this.handle(data);
     };
     websocket.onopen = (_event) => {
-      this.sendReady();
+      this.sendReady(this.username);
     };
     this.websocket = websocket;
   }
@@ -43,10 +44,12 @@ class Client {
     this.websocket.send(JSON.stringify(data));
   }
 
-  sendReady() {
+  sendReady(username) {
     const data = {
       type: "ready",
-      body: null,
+      body: {
+        username: username,
+      },
     };
     this.send(data);
   }
@@ -158,8 +161,8 @@ class Client {
   }
 
   handle(data) {
-    console.log(`The client receives the following data:`);
-    console.log(data);
+    // console.log(`The client receives the following data:`);
+    // console.log(data);
     switch (data.type) {
       case "error":
         this.handleError(data.body);
