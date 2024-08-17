@@ -27,7 +27,7 @@ class Client {
 
   createUser() {
     // console.log(this.username);
-    let websocket = new WebSocket(`wss://cant-stop.kuangyuwu.com`);
+    let websocket = new WebSocket(`ws://cant-stop.kuangyuwu.com`);
     // let websocket = new WebSocket(`wss://localhost:8080/`);
     websocket.onmessage = async (event) => {
       const text = await new Response(event.data).text();
