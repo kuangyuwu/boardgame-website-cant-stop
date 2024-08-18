@@ -1,6 +1,7 @@
 import { initializeGameboard, updateSpace, blockPath } from "./gameboard.js";
 import {
   clearFeed,
+  postChooseRuleset,
   postPrep,
   postPrepUpdate,
   postRoll,
@@ -24,6 +25,7 @@ import { debugLog } from "./debug.js";
 class Client {
   constructor() {
     this.username = "";
+    this.choosingRuleset = false;
     this.websocket = null;
   }
 
@@ -74,6 +76,16 @@ class Client {
       type: "user",
       body: {
         username: username,
+      },
+    };
+    this.send(data);
+  }
+
+  sendRuleset(ruleset) {
+    const data = {
+      type: "ruleset",
+      body: {
+        ruleset: ruleset,
       },
     };
     this.send(data);
@@ -255,10 +267,16 @@ class Client {
 
   handlePrepUpdate(data) {
     clearFeed();
+    if (data.ruleset == 0 && data.isHosting) {
+      postChooseRuleset([2, 3, 4], this.sendRuleset.bind(this));
+      return;
+    }
     postPrepUpdate(
       data.roomId,
+      data.ruleset,
       data.isHosting,
       data.isReady,
+      this.sendRuleset.bind(this),
       this.sendPrepLeave.bind(this),
       this.sendPrepReady.bind(this),
       this.sendPrepUnready.bind(this),
