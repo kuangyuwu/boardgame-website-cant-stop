@@ -64,8 +64,12 @@ function formNode(inputId, labelPrompt, buttonText, onSubmit) {
   return form;
 }
 
+function postConnect(onClick) {
+  postToFeed(buttonNode("Start playing", onClick));
+}
+
 function postCreateUser(onSubmit) {
-  postToFeed(formNode("username", "Enter your username:", "Submit", onSubmit));
+  postToFeed(formNode("username", "Enter a username:", "Submit", onSubmit));
 }
 
 function postPrep(sendPrepNew, sendPrepJoin) {
@@ -198,6 +202,7 @@ function postWinner(username, sendEndGame) {
 
 export {
   clearFeed,
+  postConnect,
   postCreateUser,
   postPrep,
   postPrepUpdate,

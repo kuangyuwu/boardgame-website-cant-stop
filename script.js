@@ -1,12 +1,16 @@
 import { Client } from "./client.js";
-import { postCreateUser } from "./feed.js";
+import { postConnect, postCreateUser } from "./feed.js";
 
 function main() {
-  postCreateUser((username) => {
+  postConnect(() => {
     var client = new Client();
-    client.username = username;
-    client.createUser.bind(client)();
+    client.connect.bind(client)();
   });
+  // postCreateUser((username) => {
+  //   var client = new Client();
+  //   client.username = username;
+  //   client.createUser.bind(client)();
+  // });
 }
 
 main();

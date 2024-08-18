@@ -9,6 +9,7 @@ import {
   postContinue,
   postFail,
   postWinner,
+  postCreateUser,
 } from "./feed.js";
 import {
   updateTurnCount,
@@ -18,6 +19,7 @@ import {
   resetSidePanel,
 } from "./side_panel.js";
 import { logEvent } from "./log.js";
+import { debugLog } from "./debug.js";
 
 class Client {
   constructor() {
@@ -25,28 +27,51 @@ class Client {
     this.websocket = null;
   }
 
-  createUser() {
-    // console.log(this.username);
-    let websocket = new WebSocket(`ws://cant-stop.kuangyuwu.com`);
-    // let websocket = new WebSocket(`wss://localhost:8080/`);
+  connect() {
+    debugLog("connect");
+    // let websocket = new WebSocket(`ws://cant-stop.kuangyuwu.com`);
+    let websocket = new WebSocket(`ws://localhost:8080/`);
     websocket.onmessage = async (event) => {
       const text = await new Response(event.data).text();
       const data = JSON.parse(text);
       this.handle(data);
     };
     websocket.onopen = (_event) => {
-      this.sendReady(this.username);
+      this.sendReady();
     };
     this.websocket = websocket;
   }
+
+  // createUser() {
+  //   // console.log(this.username);
+  //   let websocket = new WebSocket(`ws://cant-stop.kuangyuwu.com`);
+  //   // let websocket = new WebSocket(`wss://localhost:8080/`);
+  //   websocket.onmessage = async (event) => {
+  //     const text = await new Response(event.data).text();
+  //     const data = JSON.parse(text);
+  //     this.handle(data);
+  //   };
+  //   websocket.onopen = (_event) => {
+  //     this.sendReady(this.username);
+  //   };
+  //   this.websocket = websocket;
+  // }
 
   send(data) {
     this.websocket.send(JSON.stringify(data));
   }
 
-  sendReady(username) {
+  sendReady() {
     const data = {
       type: "ready",
+      body: null,
+    };
+    this.send(data);
+  }
+
+  sendUser(username) {
+    const data = {
+      type: "user",
       body: {
         username: username,
       },
@@ -161,11 +186,14 @@ class Client {
   }
 
   handle(data) {
-    // console.log(`The client receives the following data:`);
-    // console.log(data);
+    debugLog(`The client receives the following data:`);
+    debugLog(data);
     switch (data.type) {
       case "error":
         this.handleError(data.body);
+        break;
+      case "user":
+        this.handleUser();
         break;
       case "prep":
         this.handlePrep();
@@ -213,6 +241,11 @@ class Client {
 
   handleError(body) {
     console.log(body.error);
+  }
+
+  handleUser() {
+    clearFeed();
+    postCreateUser(this.sendUser.bind(this));
   }
 
   handlePrep() {
