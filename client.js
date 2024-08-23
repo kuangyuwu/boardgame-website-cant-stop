@@ -71,9 +71,9 @@ class Client {
     this.send(data);
   }
 
-  sendUser(username) {
+  sendUsername(username) {
     const data = {
-      type: "user",
+      type: "username",
       body: {
         username: username,
       },
@@ -204,8 +204,8 @@ class Client {
       case "error":
         this.handleError(data.body);
         break;
-      case "user":
-        this.handleUser();
+      case "username":
+        this.handleUsername();
         break;
       case "prep":
         this.handlePrep();
@@ -255,9 +255,9 @@ class Client {
     console.log(body.error);
   }
 
-  handleUser() {
+  handleUsername() {
     clearFeed();
-    postCreateUser(this.sendUser.bind(this));
+    postCreateUser(this.sendUsername.bind(this));
   }
 
   handlePrep() {
