@@ -17,10 +17,8 @@ import {
   updateMoveCount,
   createPlayers,
   updatePlayer,
-  resetSidePanel,
 } from "./side_panel.js";
 import { logEvent } from "./log.js";
-import { debugLog } from "./debug.js";
 
 class Client {
   constructor() {
@@ -30,9 +28,7 @@ class Client {
   }
 
   connect() {
-    debugLog("connect");
     let websocket = new WebSocket(`ws://cant-stop-backend.kuangyuwu.com`);
-    // let websocket = new WebSocket(`ws://localhost:8080/`);
     websocket.onmessage = async (event) => {
       const text = await new Response(event.data).text();
       const data = JSON.parse(text);
@@ -43,21 +39,6 @@ class Client {
     };
     this.websocket = websocket;
   }
-
-  // createUser() {
-  //   // console.log(this.username);
-  //   let websocket = new WebSocket(`ws://cant-stop.kuangyuwu.com`);
-  //   // let websocket = new WebSocket(`wss://localhost:8080/`);
-  //   websocket.onmessage = async (event) => {
-  //     const text = await new Response(event.data).text();
-  //     const data = JSON.parse(text);
-  //     this.handle(data);
-  //   };
-  //   websocket.onopen = (_event) => {
-  //     this.sendReady(this.username);
-  //   };
-  //   this.websocket = websocket;
-  // }
 
   send(data) {
     this.websocket.send(JSON.stringify(data));
@@ -198,8 +179,6 @@ class Client {
   }
 
   handle(data) {
-    debugLog(`The client receives the following data:`);
-    debugLog(data);
     switch (data.type) {
       case "error":
         this.handleError(data.body);
@@ -345,13 +324,6 @@ class Client {
     for (const b of body.blockedPaths) {
       blockPath(b.path, b.color);
     }
-    // this.sendToAll({
-    //   type: "gameboard",
-    //   body: {
-    //     gameboard: gameboard,
-    //     block: block,
-    //   },
-    // });
   }
 }
 
