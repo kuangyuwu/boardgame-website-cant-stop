@@ -271,6 +271,8 @@ class Client {
   handleStart(body) {
     createPlayers(body.usernames);
     initializeGameboard(body.pathLengths);
+    const instruction = document.getElementById("instruction");
+    instruction.remove();
     clearFeed();
   }
 
