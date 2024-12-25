@@ -1,21 +1,19 @@
-let feedLocked = false;
-
 function clearFeed() {
-  const feed = document.getElementById("feed");
-  feed.innerHTML = "";
+  document.querySelectorAll(".feed").forEach((e) => {
+    e.innerHTML = "";
+  })
 }
 
-function postToFeed(...innerHTMLNodes) {
-  if (feedLocked) return;
-  const feed = document.getElementById("feed");
-  const activityOuter = document.createElement("div");
-  activityOuter.setAttribute("class", "activity-outer");
-  const activityInner = document.createElement("div");
-  activityInner.setAttribute("class", "activity-inner");
-
-  feed.appendChild(activityOuter);
-  activityOuter.appendChild(activityInner);
-  activityInner.append(...innerHTMLNodes);
+function postToFeed(children) {
+  document.querySelectorAll(".feed").forEach((e) => {
+    const activityOuter = document.createElement("div");
+    activityOuter.setAttribute("class", "activity-outer");
+    const activityInner = document.createElement("div");
+    activityInner.setAttribute("class", "activity-inner");
+    activityOuter.appendChild(activityInner);
+    activityInner.append(...children());
+    e.appendChild(activityOuter);
+  })
 }
 
 function textNode(content) {
@@ -46,6 +44,7 @@ function formNode(inputId, labelPrompt, buttonText, onSubmit) {
   label.setAttribute("for", inputId);
   label.textContent = labelPrompt;
   const input = document.createElement("input");
+  input.autocomplete = "off";
   input.type = "text";
   input.id = inputId;
   input.name = inputId;
@@ -68,41 +67,34 @@ function formNode(inputId, labelPrompt, buttonText, onSubmit) {
 }
 
 function postConnect(onClick) {
-  postToFeed(buttonNode("Start playing", onClick));
+  const children = () => [buttonNode("Start playing", onClick)];
+  postToFeed(children);
 }
 
 function postCreateUser(onSubmit) {
-  postToFeed(formNode("username", "Enter a username:", "Submit", onSubmit));
+  let i = 0;
+  const children = () => {
+    i++;
+    return [formNode(`username-${i}`, "Enter a username:", "Submit", onSubmit)]
+  };
+  postToFeed(children);
 }
 
 function postPrep(sendPrepNew, sendPrepJoin) {
-  postToFeed(buttonNode("Create a new room", sendPrepNew));
-  postToFeed(
-    formNode("room-id", "Enter room id to join: ", "Join", sendPrepJoin)
-  );
-}
-
-function postChooseRuleset(rulesets, sendRuleset) {
-  let nodes = [textNode("Choose a game mode: ")];
-  for (const i of rulesets) {
-    nodes.push(
-      buttonNode(i + " dices", () => {
-        feedLocked = false;
-        sendRuleset(i);
-      })
-    );
-  }
-  feedLocked = false;
-  postToFeed(...nodes);
-  feedLocked = true;
+  let i = 0;
+  const children1 = () => [buttonNode("Create a new room", sendPrepNew)]
+  const children2 = () => {
+    i++;
+    return [formNode(`room-id-${i}`, "Enter room id to join: ", "Join", sendPrepJoin)];
+  };
+  postToFeed(children1);
+  postToFeed(children2);
 }
 
 function postPrepUpdate(
   roomId,
-  ruleset,
   isHosting,
   isReady,
-  sendRuleset,
   sendPrepLeave,
   sendPrepReady,
   sendPrepUnready,
@@ -111,14 +103,12 @@ function postPrepUpdate(
 ) {
   if (isHosting) {
     postPrepHosting(roomId, sendPrepLeave);
-    postRuleset(ruleset, isHosting, sendRuleset);
     postPrepUsernames(...usernames);
     if (isReady) {
       postPrepStart(sendStart);
     }
   } else {
     postPrepJoined(roomId, sendPrepLeave);
-    postRuleset(ruleset, isHosting, sendRuleset);
     postPrepUsernames(...usernames);
     if (isReady) {
       postPrepReady(sendPrepUnready);
@@ -128,127 +118,159 @@ function postPrepUpdate(
   }
 }
 
-function postRuleset(ruleset, isHosting, sendRuleset) {
-  if (ruleset == 0) {
-    postToFeed(textNode("Game mode: choosing..."));
-    return;
-  }
-  let nodes = [textNode(`Game mode: ${ruleset} dices`)];
-  if (isHosting) {
-    nodes.push(
-      buttonNode("Change game mode", () => {
-        sendRuleset(0);
-      })
-    );
-  }
-  postToFeed(...nodes);
-}
-
 function postPrepHosting(roomId, sendPrepLeave) {
-  postToFeed(
+  const children = () => [
     textNode(`Hosting room: ${roomId}`),
-    buttonNode("Leave", sendPrepLeave)
-  );
+    buttonNode("Leave", sendPrepLeave),
+  ];
+  postToFeed(children);
 }
 
 function postPrepJoined(roomId, sendPrepLeave) {
-  postToFeed(
+  const children = () => [
     textNode(`Room ID: ${roomId}`),
-    buttonNode("Leave", sendPrepLeave)
-  );
+    buttonNode("Leave", sendPrepLeave),
+  ];
+  postToFeed(children);
 }
 
 function postPrepUsernames(...usernames) {
-  postToFeed(textNode("Players: " + usernames.join(", ")));
+  const children = () => [textNode("Players: " + usernames.join(", "))];
+  postToFeed(children);
 }
 
 function postPrepNotReady(sendPrepReady) {
-  postToFeed(textNode("Ready to play?"), buttonNode("Ready", sendPrepReady));
+  const children = () => [
+    textNode("Ready to play?"),
+    buttonNode("Ready", sendPrepReady)
+  ];
+  postToFeed(children);
 }
 
 function postPrepReady(sendPrepUnready) {
-  postToFeed(
+  const children = () => [
     textNode("Ready to play, waiting for the host to start"),
     buttonNode("Cancel", sendPrepUnready)
-  );
+  ];
+  postToFeed(children);
 }
 
 function postPrepStart(sendStart) {
-  postToFeed(textNode("All players are ready"), buttonNode("Start", sendStart));
+  const children = () => [
+    textNode("All players are ready"),
+    buttonNode("Start", sendStart),
+  ];
+  postToFeed(children);
 }
 
-function postRoomDismissed() {
-  postToFeed(textNode("The game was dismissed..."));
-}
-
-function postRoll(sendRoll) {
-  postToFeed(textNode("Roll the dices:"), buttonNode("Roll", sendRoll));
-}
-
-function postPoints(points) {
-  console.log(points);
-  console.log(points.map(diceNode));
-  postToFeed(textNode("Dices:&nbsp;"), ...points.map(diceNode));
-}
-
-function postOption(grouping, actions, sendAction) {
-  let nodes = [];
-  for (const [i, group] of grouping.entries()) {
-    for (const point of group) {
-      nodes.push(diceNode(point));
-    }
-    if (i != grouping.length - 1) {
-      nodes.push(textNode("&nbsp;,&nbsp;"));
-    } else {
-      nodes.push(textNode("&nbsp;:&nbsp;"));
-    }
+function postRoll(isPlaying, username, sendRoll) {
+  let children = () => {};
+  if (isPlaying) {
+    children = () => [
+      textNode("Roll the dice:"),
+      buttonNode("Roll", sendRoll)
+    ];
+  } else {
+    children = () => [textNode(`${username} is rolling the dice...`)];
   }
-  if (actions.length == 0) {
-    nodes.push(textNode("no valid options"));
+  postToFeed(children);
+}
+
+function postDice(isPlaying, username, dice, options, failed, sendAdvance, sendFail) {
+  postToFeed(() => {
+    return [
+      textNode(`${isPlaying ? "You" : username} rolled:&nbsp;`),
+      ...dice.map(diceNode)
+    ];
+  });
+  const groupingNodes = (i0, i1, i2, i3) => [
+    diceNode(dice[i0]),
+    diceNode(dice[i1]),
+    textNode("&nbsp;,&nbsp;"),
+    diceNode(dice[i2]),
+    diceNode(dice[i3]),
+    textNode("&nbsp;:&nbsp;"),
+  ];
+  for (let i = 0; i < 3; i++) {
+    postToFeed(() => {
+      let nodes = [];
+      nodes.push(...groupingNodes(0, i + 1, Math.floor((4-i)/2), Math.floor((7-i)/2)));
+      if (options[i][0][0] === 0) {
+        nodes.push(textNode("no valid options"));
+      } else {
+        nodes.push(textNode("Advance&nbsp;"));
+        if (options[i][0][1] !== 0) {
+          const text = `${options[i][0][0]},${options[i][0][1]}`;
+          nodes.push(
+            isPlaying ?
+            buttonNode(text, () => { sendAdvance(options[i][0]); }):
+            textNode(text)
+          );
+        } else {
+          const text = `${options[i][0][0]}`;
+          nodes.push(
+            isPlaying ?
+            buttonNode(text, () => { sendAdvance(options[i][0]); }):
+            textNode(text)
+          );
+          if (options[i][1][0] !== 0) {
+            nodes.push(textNode("&nbsp;or&nbsp;"));
+            const text = `${options[i][1][0]}`;
+            nodes.push(
+              isPlaying ?
+              buttonNode(text, () => { sendAdvance(options[i][1]); }):
+              textNode(text)
+            );
+          }
+        }
+      }
+      return nodes;
+    });
   }
-  for (const action of actions) {
-    nodes.push(
-      buttonNode("Advance " + action.join(), () => {
-        sendAction(action);
-      })
-    );
+  if (failed) {
+    postToFeed(() => (
+      isPlaying ?
+      [textNode("Turn failed&nbsp;"), buttonNode("Ok", sendFail)] :
+      [textNode("Turn failed")]
+    ));
   }
-  postToFeed(...nodes);
 }
 
-function postContinue(sendContinue, sendStop) {
-  postToFeed(
-    textNode("Continue?&nbsp;"),
-    buttonNode("Continue and roll", sendContinue),
-    buttonNode("Stop", sendStop)
-  );
+function postAdvance(isPlaying, username, advance, sendContinue, sendStop) {
+  if (isPlaying) {
+    postToFeed(() => [
+      textNode("Continue?&nbsp;"),
+      buttonNode("Continue and roll", sendContinue),
+      buttonNode("Stop", sendStop)
+    ])
+  } else {
+    postToFeed(() => {
+      const text = (
+        advance[1] > 0 ?
+        `${username} advanced ${advance[0]} & ${advance[1]}` :
+        `${username} advanced ${advance[0]}`
+      );
+      return [textNode(text)]
+    })
+  }
 }
 
-function postFail(sendFail) {
-  postToFeed(
-    textNode("No valid actions, turn failed&nbsp;"),
-    buttonNode("Ok", sendFail)
-  );
-}
-
-function postWinner(username, sendEndGame) {
-  postToFeed(
-    textNode(`Game over, winner is ${username}`),
-    buttonNode("OK", sendEndGame)
-  );
+function postWinner(username, sendExitGame) {
+  const children = () => [
+    textNode(`Game over, ${username} won the game!`),
+    buttonNode("OK", sendExitGame)
+  ];
+  postToFeed(children);
 }
 
 export {
   clearFeed,
   postConnect,
   postCreateUser,
-  postChooseRuleset,
   postPrep,
   postPrepUpdate,
   postRoll,
-  postPoints,
-  postOption,
-  postContinue,
-  postFail,
+  postDice,
+  postAdvance,
   postWinner,
 };

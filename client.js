@@ -1,34 +1,32 @@
-import { initializeGameboard, updateSpace, blockPath } from "./gameboard.js";
+import { updateBoard } from "./board.js";
 import {
   clearFeed,
-  postChooseRuleset,
   postPrep,
   postPrepUpdate,
   postRoll,
-  postPoints,
-  postOption,
-  postContinue,
-  postFail,
+  postDice,
+  postAdvance,
   postWinner,
   postCreateUser,
 } from "./feed.js";
 import {
-  updateTurnCount,
-  updateMoveCount,
-  createPlayers,
-  updatePlayer,
+  updateTurn,
+  updateMove,
+  updateScoreBoard,
 } from "./side_panel.js";
-import { logEvent } from "./log.js";
+import { logMessage } from "./log.js";
 
 class Client {
   constructor() {
     this.username = "";
-    this.choosingRuleset = false;
     this.websocket = null;
+    this.usernames = [];
+    this.playerNow = 0;
+    this.scores = [];
   }
 
   connect() {
-    let websocket = new WebSocket(`ws://localhost:8080/`);
+    let websocket = new WebSocket(`ws://localhost:8080/websocket`);
     websocket.onmessage = async (event) => {
       const text = await new Response(event.data).text();
       const data = JSON.parse(text);
@@ -46,35 +44,24 @@ class Client {
 
   sendReady() {
     const data = {
-      type: "ready",
+      type: "start",
       body: null,
     };
     this.send(data);
   }
 
   sendUsername(username) {
+    this.username = username;
     const data = {
       type: "username",
-      body: {
-        username: username,
-      },
-    };
-    this.send(data);
-  }
-
-  sendRuleset(ruleset) {
-    const data = {
-      type: "ruleset",
-      body: {
-        ruleset: ruleset,
-      },
+      body: username,
     };
     this.send(data);
   }
 
   sendPrepNew() {
     const data = {
-      type: "prepNew",
+      type: "newRoom",
       body: null,
     };
     this.send(data);
@@ -82,17 +69,15 @@ class Client {
 
   sendPrepJoin(roomId) {
     const data = {
-      type: "prepJoin",
-      body: {
-        roomId: roomId,
-      },
+      type: "joinRoom",
+      body: roomId,
     };
     this.send(data);
   }
 
   sendPrepLeave() {
     const data = {
-      type: "prepLeave",
+      type: "leaveRoom",
       body: null,
     };
     this.send(data);
@@ -100,7 +85,7 @@ class Client {
 
   sendPrepReady() {
     const data = {
-      type: "prepReady",
+      type: "ready",
       body: null,
     };
     this.send(data);
@@ -108,15 +93,15 @@ class Client {
 
   sendPrepUnready() {
     const data = {
-      type: "prepUnready",
+      type: "unready",
       body: null,
     };
     this.send(data);
   }
 
-  sendStart() {
+  sendStartGame() {
     const data = {
-      type: "start",
+      type: "startGame",
       body: null,
     };
     this.send(data);
@@ -130,49 +115,34 @@ class Client {
     this.send(data);
   }
 
-  sendAction(action) {
+  sendAdvance(advance) {
     const data = {
-      type: "act",
-      body: {
-        action: action,
-      },
-    };
-    this.send(data);
-  }
-
-  sendFail() {
-    const data = {
-      type: "confirm",
-      body: {
-        willContinue: false,
-      },
+      type: "advance",
+      body: advance,
     };
     this.send(data);
   }
 
   sendStop() {
     const data = {
-      type: "confirm",
-      body: {
-        willContinue: false,
-      },
+      type: "decision",
+      body: false,
     };
     this.send(data);
   }
 
   sendContinue() {
     const data = {
-      type: "confirm",
-      body: {
-        willContinue: true,
-      },
+      type: "decision",
+      body: true,
     };
     this.send(data);
+    this.sendRoll();
   }
 
-  sendEndGame() {
+  sendExitGame() {
     const data = {
-      type: "exit",
+      type: "exitGame",
       body: null,
     };
     this.send(data);
@@ -183,6 +153,9 @@ class Client {
       case "error":
         this.handleError(data.body);
         break;
+      case "warn":
+        this.handleWarn(data.body);
+        break;
       case "username":
         this.handleUsername();
         break;
@@ -192,35 +165,41 @@ class Client {
       case "prepUpdate":
         this.handlePrepUpdate(data.body);
         break;
-      case "log":
-        this.handleLog(data.body);
-        break;
       case "start":
-        this.handleStart(data.body);
+        this.handleStart();
         break;
-      case "turnCount":
-        this.handleTurnCount(data.body);
+      case "usernames":
+        this.handleUsernames(data.body);
         break;
-      case "moveCount":
-        this.handleMoveCount(data.body);
+      case "turn":
+        this.handleTurn(data.body);
         break;
       case "player":
         this.handlePlayer(data.body);
         break;
+      case "move":
+        this.handleMove(data.body);
+        break;
+      case "scores":
+        this.handleScores(data.body);
+        break;
       case "roll":
         this.handleRoll();
         break;
-      case "result":
-        this.handleResult(data.body);
+      case "dice":
+        this.handleDice(data.body);
         break;
-      case "confirm":
-        this.handleContinue();
+      case "advance":
+        this.handleAdvance(data.body);
+        break;
+      case "stop":
+        this.handleStop();
         break;
       case "winner":
         this.handleWinner(data.body);
         break;
-      case "gameboard":
-        this.handleGameboard(data.body);
+      case "board":
+        this.handleBoard(data.body);
         break;
 
       default:
@@ -231,11 +210,16 @@ class Client {
   }
 
   handleError(body) {
-    console.log(body.error);
+    console.error(body);
+  }
+
+  handleWarn(body) {
+    console.warn(body)
   }
 
   handleUsername() {
     clearFeed();
+    this.username = "";
     postCreateUser(this.sendUsername.bind(this));
   }
 
@@ -246,86 +230,95 @@ class Client {
 
   handlePrepUpdate(data) {
     clearFeed();
-    if (data.ruleset == 0 && data.isHosting) {
-      postChooseRuleset([2, 3, 4], this.sendRuleset.bind(this));
-      return;
-    }
     postPrepUpdate(
       data.roomId,
-      data.ruleset,
       data.isHosting,
       data.isReady,
-      this.sendRuleset.bind(this),
       this.sendPrepLeave.bind(this),
       this.sendPrepReady.bind(this),
       this.sendPrepUnready.bind(this),
-      this.sendStart.bind(this),
+      this.sendStartGame.bind(this),
       ...data.usernames
     );
   }
 
-  handleLog(body) {
-    logEvent(body.content);
+  handleStart() {
+    logMessage("Game started!")
   }
 
-  handleStart(body) {
-    createPlayers(body.usernames);
-    initializeGameboard(body.pathLengths);
-    const instruction = document.getElementById("instruction");
-    instruction.remove();
-    clearFeed();
+  handleUsernames(body) {
+    this.usernames = body;
   }
 
-  handleTurnCount(body) {
-    updateTurnCount(body.turnCount);
+  handleTurn(body) {
+    updateTurn(body);
   }
 
   handlePlayer(body) {
-    updatePlayer(body.username, body.isPlaying, body.score);
+    this.playerNow = body - 1;
+    updateScoreBoard(this.usernames, this.playerNow, this.scores);
   }
 
-  handleMoveCount(body) {
-    updateMoveCount(body.moveCount);
+  handleMove(body) {
+    updateMove(body);
+  }
+  
+  handleScores(body) {
+    this.scores = body;
+    updateScoreBoard(this.usernames, this.playerNow, this.scores);
   }
 
   handleRoll() {
     clearFeed();
-    postRoll(this.sendRoll.bind(this));
+    const u = this.usernames[this.playerNow];
+    postRoll(u === this.username, u, this.sendRoll.bind(this));
   }
 
-  handleResult(body) {
+  handleDice(body) {
     clearFeed();
-    postPoints(body.points);
-    for (const option of body.options) {
-      postOption(option.grouping, option.actions, this.sendAction.bind(this));
-    }
+    const u = this.usernames[this.playerNow];
+    postDice(
+      u === this.username,
+      u,
+      body.dice,
+      body.options,
+      body.failed,
+      this.sendAdvance.bind(this),
+      this.sendStop.bind(this),
+    );
+    logMessage(`${u} rolled ${body.dice.join()}`)
     if (body.failed) {
-      postFail(this.sendFail.bind(this));
+      logMessage(`${u} failed this turn`)
     }
   }
 
-  handleContinue() {
+  handleAdvance(body) {
     clearFeed();
-    postContinue(this.sendContinue.bind(this), this.sendStop.bind(this));
+    const u = this.usernames[this.playerNow];
+    postAdvance(
+      u === this.username,
+      u,
+      body,
+      this.sendContinue.bind(this),
+      this.sendStop.bind(this)
+    );
+    logMessage(`${u} advanced ${body[0]}` + (body[1] !== 0 ? `,${body[1]}` : ""));
+  }
+
+  handleStop() {
+    const u = this.usernames[this.playerNow];
+    logMessage(`${u} decided to stop`)
   }
 
   handleWinner(body) {
     clearFeed();
-    postWinner(body.winner, this.sendEndGame.bind(this));
+    const winner = this.usernames[body-1]
+    postWinner(winner, this.sendExitGame.bind(this));
+    logMessage(`${winner} won the game!`)
   }
 
-  handleGameboard(body) {
-    for (const [i, path] of body.gameboard.entries()) {
-      if (path.length == 0) {
-        continue;
-      }
-      for (const [j, space] of path.entries()) {
-        updateSpace(i, j, space.colors, space.hasTemp);
-      }
-    }
-    for (const b of body.blockedPaths) {
-      blockPath(b.path, b.color);
-    }
+  handleBoard(body) {
+    updateBoard(body);
   }
 }
 
