@@ -48,7 +48,7 @@ body {
 }
 
 #side-panel {
-    width: 25%;
+    width: 35%;
     height: 450px;
 }
 
@@ -121,7 +121,7 @@ body {
 }
 
 .board-outer {
-    width: 75%;
+    width: 65%;
     height: 450px;
     display: flex;
     align-items: center; 

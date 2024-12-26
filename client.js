@@ -1,13 +1,15 @@
 import { updateBoard } from "./board.js";
 import {
   clearFeed,
+  postCreateUser,
+  postMode,
   postPrep,
   postPrepUpdate,
   postRoll,
   postDice,
   postAdvance,
   postWinner,
-  postCreateUser,
+  postRetry,
 } from "./feed.js";
 import {
   updateTurn,
@@ -23,6 +25,7 @@ class Client {
     this.usernames = [];
     this.playerNow = 0;
     this.scores = [];
+    this.mode = 0;
   }
 
   connect() {
@@ -159,6 +162,9 @@ class Client {
       case "username":
         this.handleUsername();
         break;
+      case "mode":
+        this.handleMode();
+        break
       case "prep":
         this.handlePrep();
         break;
@@ -223,6 +229,10 @@ class Client {
     postCreateUser(this.sendUsername.bind(this));
   }
 
+  handleMode() {
+    postMode(this.send.bind(this), ((i) => { this.mode = i; }).bind(this));
+  }
+
   handlePrep() {
     clearFeed();
     postPrep(this.sendPrepNew.bind(this), this.sendPrepJoin.bind(this));
@@ -248,6 +258,10 @@ class Client {
 
   handleUsernames(body) {
     this.usernames = body;
+    if (this.mode !== 1 && this.usernames.length === 1) {
+      this.mode = 1;
+      logMessage("Switched to single-player mode")
+    }
   }
 
   handleTurn(body) {
@@ -302,19 +316,24 @@ class Client {
       this.sendContinue.bind(this),
       this.sendStop.bind(this)
     );
-    logMessage(`${u} advanced ${body[0]}` + (body[1] !== 0 ? `,${body[1]}` : ""));
+    logMessage(`${this.mode === 1 ? "You" : u} advanced ${body[0]}` + (body[1] !== 0 ? `,${body[1]}` : ""));
   }
 
   handleStop() {
     const u = this.usernames[this.playerNow];
-    logMessage(`${u} decided to stop`)
+    logMessage(`${this.mode === 1 ? "You" : u} decided to stop`)
   }
 
   handleWinner(body) {
     clearFeed();
-    const winner = this.usernames[body-1]
-    postWinner(winner, this.sendExitGame.bind(this));
-    logMessage(`${winner} won the game!`)
+    if (this.mode === 1) {
+      postRetry(this.send.bind(this));
+      logMessage("You reached the goal!");
+    } else {
+      const winner = this.usernames[body-1];
+      postWinner(winner, this.send.bind(this));
+      logMessage(`${winner} won the game!`);
+    }
   }
 
   handleBoard(body) {

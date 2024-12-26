@@ -1,3 +1,7 @@
+import { emptyBoard } from "./board.js";
+import { clearMessages } from "./log.js";
+import { resetSidePanel } from "./side_panel.js";
+
 function clearFeed() {
   document.querySelectorAll(".feed").forEach((e) => {
     e.innerHTML = "";
@@ -67,8 +71,7 @@ function formNode(inputId, labelPrompt, buttonText, onSubmit) {
 }
 
 function postConnect(onClick) {
-  const children = () => [buttonNode("Start playing", onClick)];
-  postToFeed(children);
+  postToFeed(() => [buttonNode("Start", onClick)]);
 }
 
 function postCreateUser(onSubmit) {
@@ -78,6 +81,19 @@ function postCreateUser(onSubmit) {
     return [formNode(`username-${i}`, "Enter a username:", "Submit", onSubmit)]
   };
   postToFeed(children);
+}
+
+function postMode(send, setMode) {
+  postToFeed(() => [
+    buttonNode("Single-player", () => {
+      send({ type: "singlePlayer", body: null });
+      setMode(1);
+    }),
+    buttonNode("Multi-player", () => {
+      send({ type: "multiPlayer", body: null });
+      setMode(2);
+    }),
+  ])
 }
 
 function postPrep(sendPrepNew, sendPrepJoin) {
@@ -255,22 +271,47 @@ function postAdvance(isPlaying, username, advance, sendContinue, sendStop) {
   }
 }
 
-function postWinner(username, sendExitGame) {
+function postWinner(username, send) {
   const children = () => [
     textNode(`Game over, ${username} won the game!`),
-    buttonNode("OK", sendExitGame)
+    buttonNode("OK", () => {
+      clearMessages();
+      resetSidePanel();
+      emptyBoard();
+      send({ type: "exitGame", body: null });
+    }),
   ];
   postToFeed(children);
+}
+
+function postRetry(send) {
+  postToFeed(() => [textNode("You reached the goal!")]);
+  postToFeed(() => [buttonNode("Retry", () => {
+    clearMessages();
+    resetSidePanel();
+    emptyBoard();
+    send({ type: "exitGame", body: null });
+    send({ type: "ready", body: null });
+    send({ type: "startGame", body: null });
+  })]);
+  postToFeed(() => [buttonNode("Switch to Multi-player", () => {
+    clearMessages();
+    resetSidePanel();
+    emptyBoard();
+    send({ type: "exitGame", body: null });
+  })]);
 }
 
 export {
   clearFeed,
   postConnect,
   postCreateUser,
+  postMode,
   postPrep,
   postPrepUpdate,
   postRoll,
   postDice,
   postAdvance,
   postWinner,
+  postRetry,
 };

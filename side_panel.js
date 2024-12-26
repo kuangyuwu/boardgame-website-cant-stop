@@ -28,12 +28,15 @@ function updateScoreBoard(usernames, playerNow, scores) {
 }
 
 function resetSidePanel() {
-  const turnCounter = document.getElementById("turn");
-  turnCounter.innerHTML = "";
-  const moveCounter = document.getElementById("move");
-  moveCounter.innerHTML = "";
-  const scoreboard = document.getElementById("scoreboard");
-  scoreboard.innerHTML = "";
+  document.querySelectorAll(".turn").forEach((e) => {
+    e.innerHTML = "";
+  });
+  document.querySelectorAll(".move").forEach((e) => {
+    e.innerHTML = "";
+  });
+  document.querySelectorAll(".scoreboard").forEach((e) => {
+    e.innerHTML = "";
+  });
 }
 
 export {

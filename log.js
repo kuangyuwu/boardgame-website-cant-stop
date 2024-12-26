@@ -9,4 +9,10 @@ function logMessage(msg) {
   })
 }
 
-export { logMessage };
+function clearMessages() {
+  document.querySelectorAll(".messages").forEach((e) => {
+    e.innerHTML = "";
+  })
+}
+
+export { logMessage, clearMessages };
