@@ -1,11 +1,18 @@
-function logEvent(string) {
-  const log = document.getElementById("log");
-  const textNode = document.createTextNode(
-    `[${new Date().toTimeString().slice(0, 8)}] ${string}`
-  );
-  const newLine = document.createElement("br");
-  log.insertBefore(newLine, log.firstChild);
-  log.insertBefore(textNode, log.firstChild);
+function logMessage(msg) {
+  document.querySelectorAll(".messages").forEach((e) => {
+    const textNode = document.createTextNode(
+      `[${new Date().toTimeString().slice(0, 8)}] ${msg}`
+    );
+    const newLine = document.createElement("br");
+    e.insertBefore(newLine, e.firstChild)
+    e.insertBefore(textNode, e.firstChild)
+  })
 }
 
-export { logEvent };
+function clearMessages() {
+  document.querySelectorAll(".messages").forEach((e) => {
+    e.innerHTML = "";
+  })
+}
+
+export { logMessage, clearMessages };

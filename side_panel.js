@@ -1,50 +1,47 @@
-function updateTurnCount(turnCount) {
-  const turnCounter = document.getElementById("turn");
-  turnCounter.innerHTML = `Turn: ${turnCount}`;
+function updateTurn(turn) {
+  document.querySelectorAll(".turn").forEach((e) => {
+    e.innerHTML = `Turn: ${turn}`;
+  })
 }
 
-function updateMoveCount(moveCount) {
-  const moveCounter = document.getElementById("move");
-  moveCounter.innerHTML = `Move: ${moveCount}`;
+function updateMove(move) {
+  document.querySelectorAll(".move").forEach((e) => {
+    e.innerHTML = `Move: ${move}`;
+  })
 }
 
-function createPlayers(usernames) {
-  const scoreboard = document.getElementById("scoreboard");
-  scoreboard.innerHTML = "";
-  for (const username of usernames) {
-    const playerOuter = document.createElement("div");
-    playerOuter.setAttribute("class", "player-outer");
-    const player = document.createElement("div");
-    player.setAttribute("class", "player");
-    player.setAttribute("id", `player-${username}`);
-    player.innerHTML = `<b>Player ${username}</b><br>Score: 0`;
-    playerOuter.appendChild(player);
-    scoreboard.appendChild(playerOuter);
-  }
-}
-
-function updatePlayer(username, isPlaying, score) {
-  const player = document.getElementById(`player-${username}`);
-  if (isPlaying) {
-    player.innerHTML = `<b>** Player ${username} **</b><br>Score: ${score}`;
-  } else {
-    player.innerHTML = `<b>Player ${username}</b><br>Score: ${score}`;
-  }
+function updateScoreBoard(usernames, playerNow, scores) {
+  document.querySelectorAll(".scoreboard").forEach((e) => {
+    e.innerHTML = "";
+    usernames.forEach((u, i) => {
+      const playerOuter = document.createElement("div");
+      playerOuter.setAttribute("class", "player-outer");
+      const player = document.createElement("div");
+      player.setAttribute("class", "player");
+      player.innerHTML = i == playerNow ?
+        `<b>-> ${u}</b><br>Score: ${scores[i]}` :
+        `<b>${u}</b><br>Score: ${scores[i]}`;
+      playerOuter.appendChild(player);
+      e.appendChild(playerOuter);
+    })
+  })
 }
 
 function resetSidePanel() {
-  const turnCounter = document.getElementById("turn");
-  turnCounter.innerHTML = "";
-  const moveCounter = document.getElementById("move");
-  moveCounter.innerHTML = "";
-  const scoreboard = document.getElementById("scoreboard");
-  scoreboard.innerHTML = "";
+  document.querySelectorAll(".turn").forEach((e) => {
+    e.innerHTML = "";
+  });
+  document.querySelectorAll(".move").forEach((e) => {
+    e.innerHTML = "";
+  });
+  document.querySelectorAll(".scoreboard").forEach((e) => {
+    e.innerHTML = "";
+  });
 }
 
 export {
-  updateTurnCount,
-  updateMoveCount,
-  createPlayers,
-  updatePlayer,
+  updateTurn,
+  updateMove,
+  updateScoreBoard,
   resetSidePanel,
 };
