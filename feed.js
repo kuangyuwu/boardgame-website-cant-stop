@@ -1,6 +1,7 @@
 import { emptyBoard } from "./board.js";
 import { clearMessages } from "./log.js";
 import { resetSidePanel } from "./side_panel.js";
+import { isValidUsername, randomUsername } from "./username.js";
 
 function clearFeed() {
   document.querySelectorAll(".feed").forEach((e) => {
@@ -74,13 +75,27 @@ function postConnect(onClick) {
   postToFeed(() => [buttonNode("Start", onClick)]);
 }
 
-function postCreateUser(onSubmit) {
+function postCreateUser(sendUsername) {
   let i = 0;
-  const children = () => {
+  let inputIds = [];
+  postToFeed(() => {
     i++;
-    return [formNode(`username-${i}`, "Enter a username:", "Submit", onSubmit)]
-  };
-  postToFeed(children);
+    const inputId = `username-${i}`;
+    inputIds.push(inputId);
+    return [formNode(inputId, "Enter a username:", "Submit", (value) => {
+      if (!isValidUsername(value)) {
+        postToFeed(() => [textNode("Invalid username!")]);
+        postCreateUser(sendUsername);
+      }
+      sendUsername(value);
+    })]
+  });
+  postToFeed(() => [textNode("(Length at most 10, letters & numbers only)")]);
+  postToFeed(() => [buttonNode("Generate a random one", () => {
+    const username = randomUsername();
+    postCreateUser(sendUsername);
+    inputIds.forEach((id) => { document.getElementById(id).value = username; })
+  })]);
 }
 
 function postMode(send, setMode) {
