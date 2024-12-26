@@ -29,7 +29,7 @@ class Client {
   }
 
   connect() {
-    let websocket = new WebSocket(`wss://cant-stop-backend.kuangyuwu.com`);
+    let websocket = new WebSocket(`wss://cant-stop-backend.kuangyuwu.com/websocket`);
     websocket.onmessage = async (event) => {
       const text = await new Response(event.data).text();
       const data = JSON.parse(text);
